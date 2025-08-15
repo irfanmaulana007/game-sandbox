@@ -1,18 +1,6 @@
-interface Job {
-  id: number;
-  name: string;
-  status: Status;
-}
+import type { CharacterJob } from '~/types/character';
 
-interface Status {
-  HEALTH: number;
-  ATTACK: number;
-  DEFENSE: number;
-  SPEED: number;
-  CRITICAL: number;
-}
-
-const JOB_LIST: Job[] = [
+const JOB_LIST: CharacterJob[] = [
   {
     id: 1,
     name: 'Barbarian',
