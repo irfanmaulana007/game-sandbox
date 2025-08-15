@@ -1,5 +1,5 @@
 import React from 'react';
-import { APP_NAME } from '~/constants';
+import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   return (
@@ -7,12 +7,11 @@ const Header: React.FC = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              {APP_NAME}
-            </h1>
+            <div className="flex items-center space-x-4">
+              <Link to="/">Home</Link>
+              <Link to="/character">Character</Link>
+            </div>
           </div>
-
-          <div className="flex items-center space-x-4">header</div>
         </div>
       </div>
     </header>
