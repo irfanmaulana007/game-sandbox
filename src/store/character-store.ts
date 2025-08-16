@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { CharacterJob } from '~/types/character';
+import type { CharacterJob, CharacterStatus } from '~/types/character';
 
 interface Character {
   name: string;
   job: CharacterJob;
+  status: CharacterStatus;
   level: number;
   experience: number;
   availableStatusPoints: number;

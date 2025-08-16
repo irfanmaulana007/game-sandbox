@@ -4,14 +4,8 @@ import { Card, CardHeader, CardBody } from '~/components/ui/Card';
 import Button from '~/components/ui/Button';
 import useCharacterStore from '~/store/character-store';
 import { Navigate } from 'react-router-dom';
-import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-} from 'recharts';
+import CharacterStatusBar from '~/components/character-status/CharacterStatusBar';
+import CharacterStatusRadar from '~/components/character-status/CharacterStatusRadar';
 
 const Character: React.FC = () => {
   const { character } = useCharacterStore();
@@ -19,31 +13,6 @@ const Character: React.FC = () => {
   if (!character) {
     return <Navigate to="/onboarding" />;
   }
-
-  const transformStatusForRadar = (status: {
-    HEALTH: number;
-    ATTACK: number;
-    DEFENSE: number;
-    SPEED: number;
-    CRITICAL: number;
-  }) => {
-    return Object.entries(status).map(([key, value]) => ({
-      subject: key,
-      A: key === 'HEALTH' ? (value as number) / 10 : (value as number),
-      fullMark: 20,
-    }));
-  };
-
-  const getStatusColor = (statName: string) => {
-    const colors = {
-      HEALTH: 'bg-red-500',
-      ATTACK: 'bg-orange-500',
-      DEFENSE: 'bg-blue-500',
-      SPEED: 'bg-green-500',
-      CRITICAL: 'bg-purple-500',
-    };
-    return colors[statName as keyof typeof colors] || 'bg-gray-500';
-  };
 
   const getJobIcon = (jobName: string) => {
     const icons = {
@@ -125,36 +94,7 @@ const Character: React.FC = () => {
                     {character.availableStatusPoints}
                   </span>
                 </div>
-                {Object.entries(character.job.status).map(
-                  ([statName, value]) => (
-                    <div
-                      key={statName}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`h-3 w-3 rounded-full ${getStatusColor(statName)}`}
-                        ></div>
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
-                          {statName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-24 rounded-full bg-gray-200 dark:bg-gray-700">
-                          <div
-                            className={`h-2 rounded-full ${getStatusColor(statName).replace('bg-', 'bg-')}`}
-                            style={{
-                              width: `${(value / (statName === 'HEALTH' ? 100 : 20)) * 100}%`,
-                            }}
-                          ></div>
-                        </div>
-                        <span className="min-w-[2rem] text-right font-mono text-sm text-gray-600 dark:text-gray-400">
-                          {value}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                )}
+                <CharacterStatusBar status={character.status} />
               </div>
 
               {/* Available Status Points */}
@@ -188,27 +128,7 @@ const Character: React.FC = () => {
             </CardHeader>
             <CardBody>
               <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart
-                    data={transformStatusForRadar(character.job.status)}
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    <PolarGrid stroke="#e5e7eb" strokeDasharray="3 3" />
-                    <PolarAngleAxis
-                      dataKey="subject"
-                      tick={{ fontSize: 12, fill: '#6b7280' }}
-                    />
-                    <PolarRadiusAxis angle={90} domain={[0, 20]} tick={false} />
-                    <Radar
-                      name={character.job.name}
-                      dataKey="A"
-                      stroke="#3b82f6"
-                      fill="#3b82f6"
-                      fillOpacity={0.3}
-                      strokeWidth={2}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+                <CharacterStatusRadar status={character.status} />
               </div>
             </CardBody>
           </Card>

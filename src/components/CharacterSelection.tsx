@@ -18,15 +18,15 @@ export default function CharacterSelection({
   onSelectJob: (job: CharacterJob) => void;
 }) {
   const transformStatusForRadar = (status: {
-    HEALTH: number;
-    ATTACK: number;
-    DEFENSE: number;
-    SPEED: number;
-    CRITICAL: number;
+    health: number;
+    attack: number;
+    defense: number;
+    speed: number;
+    critical: number;
   }) => {
     return Object.entries(status).map(([key, value]) => ({
       subject: key,
-      A: key === 'HEALTH' ? (value as number) / 10 : (value as number),
+      A: key === 'health' ? (value as number) / 10 : (value as number),
       fullMark: 20,
     }));
   };
@@ -55,11 +55,11 @@ export default function CharacterSelection({
 
   const getStatusColor = (statName: string) => {
     const colors = {
-      HEALTH: 'text-red-500',
-      ATTACK: 'text-orange-500',
-      DEFENSE: 'text-blue-500',
-      SPEED: 'text-green-500',
-      CRITICAL: 'text-purple-500',
+      health: 'text-red-500',
+      attack: 'text-orange-500',
+      defense: 'text-blue-500',
+      speed: 'text-green-500',
+      critical: 'text-purple-500',
     };
     return colors[statName as keyof typeof colors] || 'text-gray-500';
   };
@@ -72,7 +72,7 @@ export default function CharacterSelection({
           className={classNames(
             'cursor-pointer rounded-xl border-2 bg-white p-6 shadow-lg transition-all duration-200 hover:shadow-xl dark:border-gray-700 dark:bg-gray-800',
             selectedJob.id === job.id
-              ? 'border-blue-500 shadow-blue-100 dark:shadow-blue-900/20 dark:border-blue-500'
+              ? 'border-blue-500 shadow-blue-100 dark:border-blue-500 dark:shadow-blue-900/20'
               : 'border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
           )}
           onClick={() => onSelectJob(job)}
@@ -112,7 +112,7 @@ export default function CharacterSelection({
           <div className="mb-6 h-48">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart
-                data={transformStatusForRadar(job.status)}
+                data={transformStatusForRadar(job.baseStatus)}
                 style={{ pointerEvents: 'none' }}
               >
                 <PolarGrid stroke="#e5e7eb" strokeDasharray="3 3" />
@@ -135,7 +135,7 @@ export default function CharacterSelection({
 
           {/* Stats Summary */}
           <div className="grid grid-cols-5 gap-2">
-            {Object.entries(job.status).map(([statName, value]) => (
+            {Object.entries(job.baseStatus).map(([statName, value]) => (
               <div key={statName} className="text-center">
                 <div
                   className={`text-xs font-medium ${getStatusColor(statName)} mb-1`}

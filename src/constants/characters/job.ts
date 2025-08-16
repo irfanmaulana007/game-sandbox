@@ -1,48 +1,50 @@
 import type { CharacterJob } from '~/types/character';
+export const MAX_HEALTH = 999;
+export const MAX_STATUS = 99;
 
 const JOB_LIST: CharacterJob[] = [
   {
     id: 1,
     name: 'Barbarian',
-    status: {
-      HEALTH: 100,
-      ATTACK: 12,
-      DEFENSE: 17,
-      SPEED: 6,
-      CRITICAL: 5,
+    baseStatus: {
+      health: 100,
+      attack: 12,
+      defense: 17,
+      speed: 6,
+      critical: 5,
     },
   },
   {
     id: 2,
     name: 'Swordsman',
-    status: {
-      HEALTH: 100,
-      ATTACK: 11,
-      DEFENSE: 13,
-      SPEED: 8,
-      CRITICAL: 8,
+    baseStatus: {
+      health: 100,
+      attack: 11,
+      defense: 13,
+      speed: 8,
+      critical: 8,
     },
   },
   {
     id: 3,
     name: 'Archer',
-    status: {
-      HEALTH: 100,
-      ATTACK: 11,
-      DEFENSE: 9,
-      SPEED: 12,
-      CRITICAL: 8,
+    baseStatus: {
+      health: 100,
+      attack: 11,
+      defense: 9,
+      speed: 12,
+      critical: 8,
     },
   },
   {
     id: 4,
     name: 'Ninja',
-    status: {
-      HEALTH: 100,
-      ATTACK: 8,
-      DEFENSE: 4,
-      SPEED: 17,
-      CRITICAL: 11,
+    baseStatus: {
+      health: 100,
+      attack: 8,
+      defense: 4,
+      speed: 17,
+      critical: 11,
     },
   },
 ];

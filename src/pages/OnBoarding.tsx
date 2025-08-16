@@ -16,12 +16,19 @@ const OnBoarding: React.FC = () => {
 
   const getJobDescription = (jobName: string) => {
     const descriptions = {
-      Barbarian: 'A fierce warrior with high defense and attack power. Perfect for players who prefer tanking and dealing heavy damage.',
-      Swordsman: 'A balanced fighter with good attack and defense. Versatile and suitable for various combat situations.',
-      Archer: 'A ranged specialist with high speed and critical chance. Excels at dealing damage from a distance.',
-      Ninja: 'A stealthy assassin with exceptional speed and critical strikes. Ideal for players who prefer hit-and-run tactics.',
+      Barbarian:
+        'A fierce warrior with high defense and attack power. Perfect for players who prefer tanking and dealing heavy damage.',
+      Swordsman:
+        'A balanced fighter with good attack and defense. Versatile and suitable for various combat situations.',
+      Archer:
+        'A ranged specialist with high speed and critical chance. Excels at dealing damage from a distance.',
+      Ninja:
+        'A stealthy assassin with exceptional speed and critical strikes. Ideal for players who prefer hit-and-run tactics.',
     };
-    return descriptions[jobName as keyof typeof descriptions] || 'A skilled warrior ready for adventure.';
+    return (
+      descriptions[jobName as keyof typeof descriptions] ||
+      'A skilled warrior ready for adventure.'
+    );
   };
 
   const getJobIcon = (jobName: string) => {
@@ -36,7 +43,7 @@ const OnBoarding: React.FC = () => {
 
   const validateForm = () => {
     const newErrors: { name?: string } = {};
-    
+
     if (!characterName.trim()) {
       newErrors.name = 'Character name is required';
     } else if (characterName.trim().length < 2) {
@@ -54,6 +61,7 @@ const OnBoarding: React.FC = () => {
 
     setCharacter({
       name: characterName.trim(),
+      status: selectedJob.baseStatus,
       level: 1,
       job: selectedJob,
       experience: 0,
@@ -73,10 +81,10 @@ const OnBoarding: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">
+        <div className="mb-8 text-center">
+          <h1 className="mb-4 text-4xl font-bold text-gray-800 dark:text-white">
             Create Your Character
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-300">
@@ -85,23 +93,31 @@ const OnBoarding: React.FC = () => {
         </div>
 
         {/* Progress Indicator */}
-        <div className="flex justify-center mb-8">
+        <div className="mb-8 flex justify-center">
           <div className="flex items-center space-x-4">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-              currentStep >= 1 
-                ? 'bg-blue-600 border-blue-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-500 dark:bg-gray-800 dark:border-gray-600'
-            }`}>
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
+                currentStep >= 1
+                  ? 'border-blue-600 bg-blue-600 text-white'
+                  : 'border-gray-300 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800'
+              }`}
+            >
               1
             </div>
-            <div className={`w-16 h-1 ${
-              currentStep >= 2 ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
-            }`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-              currentStep >= 2 
-                ? 'bg-blue-600 border-blue-600 text-white' 
-                : 'bg-white border-gray-300 text-gray-500 dark:bg-gray-800 dark:border-gray-600'
-            }`}>
+            <div
+              className={`h-1 w-16 ${
+                currentStep >= 2
+                  ? 'bg-blue-600'
+                  : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            ></div>
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 ${
+                currentStep >= 2
+                  ? 'border-blue-600 bg-blue-600 text-white'
+                  : 'border-gray-300 bg-white text-gray-500 dark:border-gray-600 dark:bg-gray-800'
+              }`}
+            >
               2
             </div>
           </div>
@@ -111,7 +127,7 @@ const OnBoarding: React.FC = () => {
           /* Step 1: Job Selection */
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
+              <h2 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
                 Choose Your Class
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
@@ -125,7 +141,7 @@ const OnBoarding: React.FC = () => {
             />
 
             {/* Selected Job Preview */}
-            <Card className="max-w-2xl mx-auto">
+            <Card className="mx-auto max-w-2xl">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="text-4xl">{getJobIcon(selectedJob.name)}</div>
@@ -140,36 +156,34 @@ const OnBoarding: React.FC = () => {
                 </div>
               </CardHeader>
               <CardBody>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  {Object.entries(selectedJob.status).map(([stat, value]) => (
-                    <div key={stat} className="text-center">
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                        {stat}
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+                  {Object.entries(selectedJob.baseStatus).map(
+                    ([stat, value]) => (
+                      <div key={stat} className="text-center">
+                        <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                          {stat}
+                        </div>
+                        <div className="text-lg font-semibold text-gray-800 dark:text-white">
+                          {value}
+                        </div>
                       </div>
-                      <div className="text-lg font-semibold text-gray-800 dark:text-white">
-                        {value}
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </CardBody>
             </Card>
 
             <div className="text-center">
-              <Button 
-                onClick={handleNext}
-                size="lg"
-                className="px-8"
-              >
+              <Button onClick={handleNext} size="lg" className="px-8">
                 Continue to Character Details
               </Button>
             </div>
           </div>
         ) : (
           /* Step 2: Character Details */
-          <div className="max-w-2xl mx-auto space-y-8">
+          <div className="mx-auto max-w-2xl space-y-8">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-2">
+              <h2 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
                 Character Details
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
@@ -194,7 +208,10 @@ const OnBoarding: React.FC = () => {
               <CardBody>
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="characterName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      htmlFor="characterName"
+                      className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       Character Name
                     </label>
                     <input
@@ -208,9 +225,9 @@ const OnBoarding: React.FC = () => {
                           setErrors({ ...errors, name: undefined });
                         }
                       }}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-                        errors.name 
-                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20' 
+                      className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 ${
+                        errors.name
+                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
                           : 'border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white'
                       }`}
                     />
@@ -221,21 +238,23 @@ const OnBoarding: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                    <h4 className="font-medium text-gray-800 dark:text-white mb-3">
+                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+                    <h4 className="mb-3 font-medium text-gray-800 dark:text-white">
                       Starting Stats
                     </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                      {Object.entries(selectedJob.status).map(([stat, value]) => (
-                        <div key={stat} className="text-center">
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                            {stat}
+                    <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+                      {Object.entries(selectedJob.baseStatus).map(
+                        ([stat, value]) => (
+                          <div key={stat} className="text-center">
+                            <div className="mb-1 text-xs text-gray-500 dark:text-gray-400">
+                              {stat}
+                            </div>
+                            <div className="text-sm font-semibold text-gray-800 dark:text-white">
+                              {value}
+                            </div>
                           </div>
-                          <div className="text-sm font-semibold text-gray-800 dark:text-white">
-                            {value}
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -243,7 +262,7 @@ const OnBoarding: React.FC = () => {
             </Card>
 
             <div className="flex justify-center gap-4">
-              <Button 
+              <Button
                 onClick={handleBack}
                 variant="outline"
                 size="lg"
@@ -251,7 +270,7 @@ const OnBoarding: React.FC = () => {
               >
                 Back
               </Button>
-              <Button 
+              <Button
                 onClick={handleSubmit}
                 size="lg"
                 className="px-8"
