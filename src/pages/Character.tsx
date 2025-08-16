@@ -18,6 +18,7 @@ const Character: React.FC = () => {
     cancelAllocation,
     allocateStatusPoint,
     applyAllocation,
+    setCharacter,
   } = useCharacterStore();
   const { getExperienceProgress } = useExperience(character);
 
@@ -34,6 +35,20 @@ const Character: React.FC = () => {
       Tank: '🛡️',
     };
     return icons[jobName as keyof typeof icons] || '👤';
+  };
+
+  const resetPoints = () => {
+    setCharacter({
+      ...character,
+      availableStatusPoints: character.level * 2 - 2,
+      status: {
+        health: character.job.baseStatus.health,
+        attack: character.job.baseStatus.attack,
+        defense: character.job.baseStatus.defense,
+        speed: character.job.baseStatus.speed,
+        critical: character.job.baseStatus.critical,
+      },
+    });
   };
 
   const experienceProgress = getExperienceProgress();
@@ -58,6 +73,9 @@ const Character: React.FC = () => {
                 </span>
                 <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
                   Level {character.level}
+                </span>
+                <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                  {character.gold} Gold
                 </span>
               </div>
             </div>
@@ -112,35 +130,49 @@ const Character: React.FC = () => {
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
                   Character Stats
                 </h2>
-                {!isAllocating && character.availableStatusPoints > 0 && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={startAllocation}
-                    className="text-xs"
-                  >
-                    Allocate Points
-                  </Button>
-                )}
-                {isAllocating && (
-                  <div className="flex gap-2">
+                <div className="flex items-center gap-x-2">
+                  {!isAllocating && (
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={cancelAllocation}
+                      onClick={resetPoints}
                       className="text-xs"
                     >
-                      Cancel
+                      Reset Points
                     </Button>
+                  )}
+
+                  {!isAllocating && character.availableStatusPoints > 0 && (
                     <Button
                       size="sm"
-                      onClick={applyAllocation}
+                      variant="outline"
+                      onClick={startAllocation}
                       className="text-xs"
                     >
-                      Apply
+                      Allocate Points
                     </Button>
-                  </div>
-                )}
+                  )}
+
+                  {isAllocating && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={cancelAllocation}
+                        className="text-xs"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={applyAllocation}
+                        className="text-xs"
+                      >
+                        Apply
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardBody>
@@ -183,9 +215,7 @@ const Character: React.FC = () => {
             <CardBody>
               <div className="h-80">
                 <CharacterStatusRadar
-                  status={
-                    character.status
-                  }
+                  status={character.status}
                   comparedStatus={tempStatus}
                 />
               </div>

@@ -109,20 +109,22 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
     // setIsBattleReady(true);
   }, [characterEntity, monsterEntity]);
 
-  const handleAttack = useCallback(
-    (attacker: BattleEntity, defender: BattleEntity) => {
-      const isCritical = Math.random() * 100 < attacker.critical;
-      const minAttack = attacker.attack - attacker.attack * 0.2;
-      const maxAttack = attacker.attack + attacker.attack * 0.2;
+  const handleAttack = (attacker: BattleEntity, defender: BattleEntity) => {
+    const isCritical = Math.random() * 100 < attacker.critical;
+    const minAttack = attacker.attack - attacker.attack * 0.3;
+    const maxAttack = attacker.attack + attacker.attack * 0.3;
 
-      const damage =
-        Math.max(0, minAttack + Math.random() * (maxAttack - minAttack)) *
-          (1 + (isCritical ? 1 : 0)) -
-        defender.defense / 2;
-      return Math.round(damage);
-    },
-    []
-  );
+    const baseDamage = Math.max(
+      0,
+      minAttack + Math.random() * (maxAttack - minAttack)
+    );
+    console.log('🚀 ~ handleAttack ~ baseDamage:', baseDamage);
+    const criticalDamage = isCritical ? 0.5 * baseDamage : 0;
+    console.log('🚀 ~ handleAttack ~ criticalDamage:', criticalDamage);
+    const finalDamage = baseDamage + criticalDamage - defender.defense / 2;
+    console.log('🚀 ~ handleAttack ~ finalDamage:', finalDamage);
+    return { damage: Math.round(finalDamage), isCritical };
+  };
 
   const handleEndBattle = useCallback(
     (winner: BattleEntity) => {
@@ -156,16 +158,22 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
       const currentTurn = battleTurn[i];
 
       if (currentTurn.entity === 'character') {
-        const damage = handleAttack(characterEntity, monsterEntity);
+        const { damage, isCritical } = handleAttack(
+          characterEntity,
+          monsterEntity
+        );
         currentMonsterHealth = Math.max(0, currentMonsterHealth - damage);
         log.push(
-          `${characterEntity.name} attacks ${monsterEntity.name} for ${damage} damage. Monster Health: ${currentMonsterHealth} left.`
+          `${characterEntity.name} attacks ${monsterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Monster Health: ${currentMonsterHealth} left.`
         );
       } else {
-        const damage = handleAttack(monsterEntity, characterEntity);
+        const { damage, isCritical } = handleAttack(
+          monsterEntity,
+          characterEntity
+        );
         currentCharacterHealth = Math.max(0, currentCharacterHealth - damage);
         log.push(
-          `${monsterEntity.name} attacks ${characterEntity.name} for ${damage} damage. Character Health: ${currentCharacterHealth} left.`
+          `${monsterEntity.name} attacks ${characterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Character Health: ${currentCharacterHealth} left.`
         );
       }
 
@@ -197,7 +205,6 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
     battleTurn,
     characterEntity,
     monsterEntity,
-    handleAttack,
     character.status.health,
     monster.health,
   ]);

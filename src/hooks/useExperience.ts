@@ -99,7 +99,7 @@ export const useExperience = (character: Character | null) => {
       if (shouldLevelUp) {
         // Calculate how many levels to add
         const levelsToAdd = newLevel - currentLevel;
-        addStatusPoint(1);
+        addStatusPoint(2);
         for (let i = 0; i < levelsToAdd; i++) {
           addLevel();
         }
