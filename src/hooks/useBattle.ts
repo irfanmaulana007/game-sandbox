@@ -185,6 +185,15 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
         log.push(`Character Health: ${currentCharacterHealth}`);
         log.push(`Monster Health: ${currentMonsterHealth}`);
         log.push(`The winner is ${winner.name}`);
+
+        if (winner.entity === 'character') {
+          log.push(
+            `${winner.entity} wins ${monster.gold} gold and ${monster.experience} experience`
+          );
+          log.push(
+            `experience gains from: ${character.experience} to ${character.experience + monster.experience}`
+          );
+        }
         break;
       }
     }

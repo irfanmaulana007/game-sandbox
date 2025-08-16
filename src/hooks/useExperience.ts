@@ -1,9 +1,13 @@
 import { useCallback } from 'react';
-import { EXPERIENCE_TABLE } from '~/constants/characters/experience';
+import {
+  BONUS_STATUS_POINT_PER_LEVEL,
+  EXPERIENCE_TABLE,
+} from '~/constants/characters/experience';
 import useCharacterStore, { type Character } from '~/store/character-store';
 
 export const useExperience = (character: Character | null) => {
-  const { addExperience, addLevel, addStatusPoint } = useCharacterStore();
+  const { addExperience, addLevel, addStatusPoint, addAttribute } =
+    useCharacterStore();
 
   const calculateExperienceToNextLevel = useCallback((level: number) => {
     const nextLevel = level + 1;
@@ -99,13 +103,21 @@ export const useExperience = (character: Character | null) => {
       if (shouldLevelUp) {
         // Calculate how many levels to add
         const levelsToAdd = newLevel - currentLevel;
-        addStatusPoint(2);
+        addStatusPoint(BONUS_STATUS_POINT_PER_LEVEL);
+        addAttribute({
+          health: character.job.bonusAttributePerLevel.health,
+          attack: character.job.bonusAttributePerLevel.attack,
+          defense: character.job.bonusAttributePerLevel.defense,
+          speed: character.job.bonusAttributePerLevel.speed,
+          critical: character.job.bonusAttributePerLevel.critical,
+        });
+
         for (let i = 0; i < levelsToAdd; i++) {
           addLevel();
         }
       }
     },
-    [character, addExperience, addLevel, addStatusPoint]
+    [character, addExperience, addLevel, addStatusPoint, addAttribute]
   );
 
   return {

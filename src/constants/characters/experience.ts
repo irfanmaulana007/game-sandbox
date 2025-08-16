@@ -1,3 +1,5 @@
+export const BONUS_STATUS_POINT_PER_LEVEL = 1;
+
 export const EXPERIENCE_TABLE = [
   {
     level: 1,

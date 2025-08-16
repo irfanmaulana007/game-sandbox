@@ -22,9 +22,13 @@ interface CharacterStore {
   addExperience: (experience: number) => void;
   addGold: (gold: number) => void;
   addStatusPoint: (point: number) => void;
+  addAttribute: (attribute: CharacterStatus) => void;
   startAllocation: () => void;
   cancelAllocation: () => void;
-  allocateStatusPoint: (statusKey: keyof CharacterStatus, amount: number) => void;
+  allocateStatusPoint: (
+    statusKey: keyof CharacterStatus,
+    amount: number
+  ) => void;
   applyAllocation: () => void;
 }
 
@@ -60,7 +64,26 @@ const useCharacterStore = create<CharacterStore>()(
       addStatusPoint: (point: number) =>
         set((state) => ({
           character: state.character
-            ? { ...state.character, availableStatusPoints: state.character.availableStatusPoints + point }
+            ? {
+                ...state.character,
+                availableStatusPoints:
+                  state.character.availableStatusPoints + point,
+              }
+            : null,
+        })),
+      addAttribute: (attribute: CharacterStatus) =>
+        set((state) => ({
+          character: state.character
+            ? {
+                ...state.character,
+                status: {
+                  health: state.character.status.health + attribute.health,
+                  attack: state.character.status.attack + attribute.attack,
+                  defense: state.character.status.defense + attribute.defense,
+                  speed: state.character.status.speed + attribute.speed,
+                  critical: state.character.status.critical + attribute.critical,
+                },
+              }
             : null,
         })),
       startAllocation: () => {
@@ -80,13 +103,17 @@ const useCharacterStore = create<CharacterStore>()(
           tempAvailablePoints: 0,
         });
       },
-      allocateStatusPoint: (statusKey: keyof CharacterStatus, amount: number) => {
+      allocateStatusPoint: (
+        statusKey: keyof CharacterStatus,
+        amount: number
+      ) => {
         const state = get();
         if (!state.tempStatus) return;
-        
+
         // For health, 1 status point = 10 health points
-        const pointsToConsume = statusKey === 'health' ? Math.abs(amount) / 10 : Math.abs(amount);
-        
+        const pointsToConsume =
+          statusKey === 'health' ? Math.abs(amount) / 10 : Math.abs(amount);
+
         // If deallocating (negative amount), we need to check if we can deallocate
         if (amount < 0) {
           // Check if we can deallocate this amount
@@ -97,25 +124,31 @@ const useCharacterStore = create<CharacterStore>()(
           // If allocating (positive amount), check if we have enough points
           if (state.tempAvailablePoints < pointsToConsume) return;
         }
-        
+
         set((state) => ({
-          tempStatus: state.tempStatus ? {
-            ...state.tempStatus,
-            [statusKey]: state.tempStatus[statusKey] + amount,
-          } : null,
-          tempAvailablePoints: state.tempAvailablePoints + (amount < 0 ? pointsToConsume : -pointsToConsume),
+          tempStatus: state.tempStatus
+            ? {
+                ...state.tempStatus,
+                [statusKey]: state.tempStatus[statusKey] + amount,
+              }
+            : null,
+          tempAvailablePoints:
+            state.tempAvailablePoints +
+            (amount < 0 ? pointsToConsume : -pointsToConsume),
         }));
       },
       applyAllocation: () => {
         const state = get();
         if (!state.character || !state.tempStatus) return;
-        
+
         set((state) => ({
-          character: state.character ? {
-            ...state.character,
-            status: state.tempStatus!,
-            availableStatusPoints: state.tempAvailablePoints,
-          } : null,
+          character: state.character
+            ? {
+                ...state.character,
+                status: state.tempStatus!,
+                availableStatusPoints: state.tempAvailablePoints,
+              }
+            : null,
           isAllocating: false,
           tempStatus: null,
           tempAvailablePoints: 0,

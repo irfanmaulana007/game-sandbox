@@ -2,6 +2,8 @@ import type { CharacterJob } from '~/types/character';
 export const MAX_HEALTH = 999;
 export const MAX_STATUS = 99;
 
+// BASE STATUS POINT EXCLUDE HEALTH POINT = 40
+
 const JOB_LIST: CharacterJob[] = [
   {
     id: 1,
@@ -12,6 +14,13 @@ const JOB_LIST: CharacterJob[] = [
       defense: 17,
       speed: 6,
       critical: 5,
+    },
+    bonusAttributePerLevel: {
+      health: 20,
+      attack: 1,
+      defense: 2,
+      speed: 1,
+      critical: 1,
     },
   },
   {
@@ -24,6 +33,13 @@ const JOB_LIST: CharacterJob[] = [
       speed: 8,
       critical: 8,
     },
+    bonusAttributePerLevel: {
+      health: 10,
+      attack: 2,
+      defense: 2,
+      speed: 1,
+      critical: 1,
+    },
   },
   {
     id: 3,
@@ -35,6 +51,13 @@ const JOB_LIST: CharacterJob[] = [
       speed: 12,
       critical: 8,
     },
+    bonusAttributePerLevel: {
+      health: 10,
+      attack: 2,
+      defense: 1,
+      speed: 2,
+      critical: 1,
+    },
   },
   {
     id: 4,
@@ -45,6 +68,13 @@ const JOB_LIST: CharacterJob[] = [
       defense: 4,
       speed: 17,
       critical: 11,
+    },
+    bonusAttributePerLevel: {
+      health: 10,
+      attack: 1,
+      defense: 1,
+      speed: 2,
+      critical: 2,
     },
   },
 ];

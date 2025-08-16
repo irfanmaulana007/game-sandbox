@@ -10,4 +10,5 @@ export interface CharacterJob {
   id: number;
   name: string;
   baseStatus: CharacterStatus;
+  bonusAttributePerLevel: CharacterStatus;
 }
