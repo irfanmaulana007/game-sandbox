@@ -5,7 +5,14 @@ import {
 } from '~/constants/characters/experience';
 import useCharacterStore, { type Character } from '~/store/character-store';
 
-export const useExperience = (character: Character | null) => {
+export interface LevelUpCallback {
+  (character: Character, previousLevel: number, previousStatus: Character['status']): void;
+}
+
+export const useExperience = (
+  character: Character | null,
+  onLevelUp?: LevelUpCallback
+) => {
   const {
     addExperience,
     addLevel,
@@ -106,6 +113,10 @@ export const useExperience = (character: Character | null) => {
 
       // Level up if eligible
       if (shouldLevelUp) {
+        // Store previous state for level up callback
+        const previousLevel = currentLevel;
+        const previousStatus = { ...character.status };
+        
         // Calculate how many levels to add
         const levelsToAdd = newLevel - currentLevel;
         addStatusPoint(BONUS_STATUS_POINT_PER_LEVEL);
@@ -119,6 +130,15 @@ export const useExperience = (character: Character | null) => {
 
         for (let i = 0; i < levelsToAdd; i++) {
           addLevel();
+        }
+
+        // Call level up callback if provided
+        if (onLevelUp) {
+          // Get the updated character from store to pass current state
+          const updatedCharacter = useCharacterStore.getState().character;
+          if (updatedCharacter) {
+            onLevelUp(updatedCharacter, previousLevel, previousStatus);
+          }
         }
       }
     },

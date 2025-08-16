@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '~/components/layout';
 import { Button } from '~/components/ui';
@@ -12,6 +12,8 @@ import BattleLog from '~/components/BattleLog';
 import type { BattleMonster } from '~/types/monster';
 import MonsterCard from '~/components/MonsterCard';
 import { useMonster } from '~/hooks/useMonster';
+import { LevelUpModal } from '~/components';
+import { useLevelUp } from '~/hooks';
 
 // Battle monster interface that combines base monster with status
 
@@ -20,11 +22,19 @@ const MapDetail: React.FC = () => {
   const navigate = useNavigate();
   const { character } = useCharacterStore();
   const { getRandomMonster } = useMonster();
+  const { levelUpState, showLevelUp, hideLevelUp, updatePreviousCharacter } = useLevelUp();
 
   const [selectedMonster, setSelectedMonster] = useState<BattleMonster | null>(
     null
   );
   const [showBattleLog, setShowBattleLog] = useState(false);
+
+  // Track character changes for level up detection
+  useEffect(() => {
+    if (character) {
+      updatePreviousCharacter(character);
+    }
+  }, [character, updatePreviousCharacter]);
 
   const handleExploration = () => {
     const randomMonster = getRandomMonster(Number(mapId));
@@ -157,6 +167,7 @@ const MapDetail: React.FC = () => {
               character={character}
               monster={selectedMonster}
               onReset={handleExploration}
+              onLevelUp={showLevelUp}
             />
           </div>
         )}
@@ -173,6 +184,15 @@ const MapDetail: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {/* Level Up Modal */}
+      <LevelUpModal
+        isVisible={levelUpState.isVisible}
+        onClose={hideLevelUp}
+        character={character}
+        previousLevel={levelUpState.previousLevel}
+        previousStatus={levelUpState.previousStatus}
+      />
     </Layout>
   );
 };

@@ -6,7 +6,7 @@ import {
   PolarRadiusAxis,
   ResponsiveContainer,
 } from 'recharts';
-import type { CharacterJob } from '~/types/character';
+import type { CharacterJob, CharacterStatus } from '~/types/character';
 import JOB_LIST from '~/constants/characters/job';
 import { classNames } from '~/utils';
 
@@ -138,12 +138,22 @@ export default function CharacterSelection({
             {Object.entries(job.baseStatus).map(([statName, value]) => (
               <div key={statName} className="text-center">
                 <div
-                  className={`text-xs font-medium ${getStatusColor(statName)} mb-1`}
+                  className={`text-xs font-medium ${getStatusColor(statName)}`}
                 >
                   {statName}
                 </div>
-                <div className="text-sm font-bold text-gray-800 dark:text-white">
-                  {value}
+                <div className="flex items-center justify-center gap-1">
+                  <div className="text-sm font-bold text-gray-800 dark:text-white">
+                    {value}
+                  </div>
+                  <div className="text-2xs text-gray-500 dark:text-gray-400">
+                    +
+                    {
+                      job.bonusAttributePerLevel[
+                        statName as keyof CharacterStatus
+                      ]
+                    }{' '}
+                  </div>
                 </div>
               </div>
             ))}

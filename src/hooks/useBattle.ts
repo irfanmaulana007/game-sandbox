@@ -8,6 +8,7 @@ import type { BattleMonster } from '~/types/monster';
 interface useBattleProps {
   character: Character;
   monster: BattleMonster;
+  onLevelUp?: (character: Character, previousLevel: number, previousStatus: Character['status']) => void;
 }
 
 interface BattleEntity extends CharacterStatus {
@@ -25,9 +26,9 @@ interface BattleResult {
 
 const MAX_TURN = 100;
 
-export const useBattle = ({ character, monster }: useBattleProps) => {
+export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => {
   const { addGold } = useCharacterStore();
-  const { calculateAddExperience } = useExperience(character);
+  const { calculateAddExperience } = useExperience(character, onLevelUp);
 
   const characterEntity: BattleEntity = useMemo(
     () => ({
@@ -119,7 +120,7 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
       const finalDamage = baseDamage + criticalDamage - defender.defense / 2;
 
       return {
-        damage: Math.round(finalDamage),
+        damage: Math.round(finalDamage) > 0 ? Math.round(finalDamage) : 0,
         isCritical,
       };
     },

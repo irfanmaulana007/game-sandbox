@@ -3,6 +3,17 @@ import { useBattle } from '~/hooks';
 import type { Character } from '~/store/character-store';
 import type { BattleMonster } from '~/types/monster';
 
+interface BattleLogProps {
+  character: Character;
+  monster: BattleMonster;
+  onReset?: () => void;
+  onLevelUp?: (
+    character: Character,
+    previousLevel: number,
+    previousStatus: Character['status']
+  ) => void;
+}
+
 // Battle monster interface that combines base monster with status
 
 interface BattleLogProps {
@@ -15,11 +26,13 @@ export default function BattleLog({
   character,
   monster,
   onReset,
+  onLevelUp,
 }: BattleLogProps) {
   const { battleResult, isBattleInProgress, handleStartBattle, resetBattle } =
     useBattle({
       character,
       monster,
+      onLevelUp,
     });
 
   // Use ref to track if battle has been started to prevent duplicate calls
@@ -70,12 +83,16 @@ export default function BattleLog({
         <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
           Battle Results
         </h3>
-        {isBattleInProgress && (
-          <div className="flex items-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              Battle in progress...
-            </span>
+
+        {/* Reset Button */}
+        {!isBattleInProgress && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={handleReset}
+              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            >
+              New Battle
+            </button>
           </div>
         )}
       </div>
@@ -156,18 +173,6 @@ export default function BattleLog({
           );
         })}
       </div>
-
-      {/* Reset Button */}
-      {!isBattleInProgress && (
-        <div className="mt-4 text-center">
-          <button
-            onClick={handleReset}
-            className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-          >
-            New Battle
-          </button>
-        </div>
-      )}
     </div>
   );
 }
