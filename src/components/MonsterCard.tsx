@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardBody } from '~/components/ui';
 import { MAX_HEALTH, MAX_STATUS } from '~/constants/characters/job';
-import type { MonsterStatus } from '~/types/monster';
+import type { Monster } from '~/types/monster';
 import { CharacterStatusBarItem } from './character-status/CharacterStatusBar';
 
 /**
@@ -30,7 +30,7 @@ import { CharacterStatusBarItem } from './character-status/CharacterStatusBar';
  * />
  */
 interface MonsterDetailCardProps {
-  monster: MonsterStatus;
+  monster: Monster;
   showHeader?: boolean;
   className?: string;
   variant?: 'default' | 'compact';

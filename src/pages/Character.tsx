@@ -6,9 +6,20 @@ import useCharacterStore from '~/store/character-store';
 import { Navigate } from 'react-router-dom';
 import CharacterStatusBar from '~/components/character-status/CharacterStatusBar';
 import CharacterStatusRadar from '~/components/character-status/CharacterStatusRadar';
+import { useExperience } from '~/hooks/useExperience';
 
 const Character: React.FC = () => {
-  const { character } = useCharacterStore();
+  const {
+    character,
+    isAllocating,
+    tempStatus,
+    tempAvailablePoints,
+    startAllocation,
+    cancelAllocation,
+    allocateStatusPoint,
+    applyAllocation,
+  } = useCharacterStore();
+  const { getExperienceProgress } = useExperience(character);
 
   if (!character) {
     return <Navigate to="/onboarding" />;
@@ -25,14 +36,10 @@ const Character: React.FC = () => {
     return icons[jobName as keyof typeof icons] || '👤';
   };
 
-  const experienceToNextLevel = (level: number) => {
-    return level * 100; // Simple formula: level * 100 XP needed
-  };
-
-  const experienceProgress = (currentExp: number, level: number) => {
-    const requiredExp = experienceToNextLevel(level);
-    return Math.min((currentExp / requiredExp) * 100, 100);
-  };
+  const experienceProgress = getExperienceProgress();
+  const displayAvailablePoints = isAllocating
+    ? tempAvailablePoints
+    : character.availableStatusPoints;
 
   return (
     <Layout>
@@ -61,18 +68,39 @@ const Character: React.FC = () => {
             <div className="mb-2 flex justify-between text-sm text-gray-600 dark:text-gray-400">
               <span>Experience</span>
               <span>
-                {character.experience} /{' '}
-                {experienceToNextLevel(character.level)} XP
+                {character.experience} XP
+                {!experienceProgress?.isMaxLevel && experienceProgress && (
+                  <>
+                    {' '}
+                    /{' '}
+                    {experienceProgress.experienceNeededForNextLevel +
+                      experienceProgress.experienceInCurrentLevel}{' '}
+                    XP
+                  </>
+                )}
+                {experienceProgress?.isMaxLevel && ' (Max Level)'}
               </span>
             </div>
             <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700">
               <div
                 className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300"
                 style={{
-                  width: `${experienceProgress(character.experience, character.level)}%`,
+                  width: `${experienceProgress ? experienceProgress.progressPercentage : 0}%`,
                 }}
               ></div>
             </div>
+            {experienceProgress && !experienceProgress.isMaxLevel && (
+              <div className="mt-1 text-center text-xs text-gray-500">
+                {experienceProgress.experienceInCurrentLevel} /{' '}
+                {experienceProgress.experienceNeededForNextLevel} XP to next
+                level
+              </div>
+            )}
+            {experienceProgress?.isMaxLevel && (
+              <div className="mt-1 text-center text-xs font-medium text-green-600">
+                🎉 Congratulations! You've reached the maximum level!
+              </div>
+            )}
           </div>
         </div>
 
@@ -80,9 +108,40 @@ const Character: React.FC = () => {
           {/* Character Stats */}
           <Card>
             <CardHeader>
-              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                Character Stats
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  Character Stats
+                </h2>
+                {!isAllocating && character.availableStatusPoints > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={startAllocation}
+                    className="text-xs"
+                  >
+                    Allocate Points
+                  </Button>
+                )}
+                {isAllocating && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={cancelAllocation}
+                      className="text-xs"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={applyAllocation}
+                      className="text-xs"
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                )}
+              </div>
             </CardHeader>
             <CardBody>
               <div className="space-y-4">
@@ -90,32 +149,27 @@ const Character: React.FC = () => {
                   <span className="text-sm text-gray-500">
                     Available Status Points
                   </span>
-                  <span className="text-sm text-gray-500">
-                    {character.availableStatusPoints}
+                  <span
+                    className={`text-sm font-medium ${
+                      isAllocating ? 'text-blue-600' : 'text-gray-500'
+                    }`}
+                  >
+                    {displayAvailablePoints}
+                    {isAllocating && (
+                      <span className="ml-2 text-xs text-blue-500">
+                        (Allocating...)
+                      </span>
+                    )}
                   </span>
                 </div>
-                <CharacterStatusBar status={character.status} />
+                <CharacterStatusBar
+                  status={character.status}
+                  isAllocating={isAllocating}
+                  tempStatus={tempStatus}
+                  tempAvailablePoints={tempAvailablePoints}
+                  onAllocatePoint={allocateStatusPoint}
+                />
               </div>
-
-              {/* Available Status Points */}
-              {character.availableStatusPoints > 0 && (
-                <div className="mt-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-medium text-yellow-800 dark:text-yellow-200">
-                        Available Status Points
-                      </h3>
-                      <p className="text-sm text-yellow-600 dark:text-yellow-300">
-                        You have {character.availableStatusPoints} points to
-                        allocate
-                      </p>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      Allocate Points
-                    </Button>
-                  </div>
-                </div>
-              )}
             </CardBody>
           </Card>
 
@@ -128,7 +182,11 @@ const Character: React.FC = () => {
             </CardHeader>
             <CardBody>
               <div className="h-80">
-                <CharacterStatusRadar status={character.status} />
+                <CharacterStatusRadar
+                  status={
+                    isAllocating && tempStatus ? tempStatus : character.status
+                  }
+                />
               </div>
             </CardBody>
           </Card>

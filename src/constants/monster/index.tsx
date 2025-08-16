@@ -1,6 +1,6 @@
-import type { MonsterStatus } from '~/types/monster';
+import type { Monster } from '~/types/monster';
 
-export const MONSTERS: MonsterStatus[] = [
+export const MONSTERS: Monster[] = [
   // Forest of Eldoria (minLevel: 1)
   {
     id: 1,
@@ -138,7 +138,8 @@ export const MONSTERS: MonsterStatus[] = [
     id: 10,
     mapId: 4,
     name: 'Swamp Witch',
-    description: 'A corrupted spellcaster who draws power from the murky waters.',
+    description:
+      'A corrupted spellcaster who draws power from the murky waters.',
     level: 10,
     experience: 800,
     gold: 150,
@@ -196,7 +197,8 @@ export const MONSTERS: MonsterStatus[] = [
     id: 14,
     mapId: 5,
     name: 'Griffin',
-    description: 'A majestic beast with the body of a lion and wings of an eagle.',
+    description:
+      'A majestic beast with the body of a lion and wings of an eagle.',
     level: 13,
     experience: 1100,
     gold: 250,
@@ -254,7 +256,8 @@ export const MONSTERS: MonsterStatus[] = [
     id: 18,
     mapId: 6,
     name: 'Shadow Lord',
-    description: 'A powerful entity of pure darkness that haunts the city streets.',
+    description:
+      'A powerful entity of pure darkness that haunts the city streets.',
     level: 19,
     experience: 1700,
     gold: 500,

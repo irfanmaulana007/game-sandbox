@@ -65,6 +65,7 @@ const OnBoarding: React.FC = () => {
       level: 1,
       job: selectedJob,
       experience: 0,
+      gold: 0,
       availableStatusPoints: 0,
     });
 
