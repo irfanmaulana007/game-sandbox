@@ -149,14 +149,25 @@ export const CharacterStatusBarItem = ({
           {name}
         </span>
       </div>
-      <div className="flex w-1/2 items-center gap-2">
-        <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-          <div
-            className={`h-2 rounded-full bg-blue-500`}
-            style={{
-              width: `${(value / maxValue) * 100}%`,
-            }}
-          ></div>
+      <div className="flex w-2/3 items-center gap-2">
+        <div className="relative h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+          <div className="absolute inset-0 z-10">
+            <div
+              className={`h-2 rounded-full bg-blue-500`}
+              style={{
+                width: `${(originalValue / maxValue) * 100}%`,
+              }}
+            />
+          </div>
+
+          <div className="absolute inset-0">
+            <div
+              className={`h-2 rounded-full bg-blue-500/30`}
+              style={{
+                width: `${(value / maxValue) * 100}%`,
+              }}
+            />
+          </div>
         </div>
         <span
           className={classNames(

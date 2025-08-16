@@ -184,8 +184,9 @@ const Character: React.FC = () => {
               <div className="h-80">
                 <CharacterStatusRadar
                   status={
-                    isAllocating && tempStatus ? tempStatus : character.status
+                    character.status
                   }
+                  comparedStatus={tempStatus}
                 />
               </div>
             </CardBody>
