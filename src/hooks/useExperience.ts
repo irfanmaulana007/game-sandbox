@@ -6,8 +6,13 @@ import {
 import useCharacterStore, { type Character } from '~/store/character-store';
 
 export const useExperience = (character: Character | null) => {
-  const { addExperience, addLevel, addStatusPoint, addAttribute } =
-    useCharacterStore();
+  const {
+    addExperience,
+    addLevel,
+    addStatusPoint,
+    addAttribute,
+    setCharacter,
+  } = useCharacterStore();
 
   const calculateExperienceToNextLevel = useCallback((level: number) => {
     const nextLevel = level + 1;
@@ -120,10 +125,39 @@ export const useExperience = (character: Character | null) => {
     [character, addExperience, addLevel, addStatusPoint, addAttribute]
   );
 
+  const resetStatusPoints = useCallback(() => {
+    if (!character) return;
+
+    setCharacter({
+      ...character,
+      availableStatusPoints:
+        character.level * BONUS_STATUS_POINT_PER_LEVEL -
+        BONUS_STATUS_POINT_PER_LEVEL,
+      status: {
+        health:
+          character.job.baseStatus.health +
+          character.job.bonusAttributePerLevel.health * character.level,
+        attack:
+          character.job.baseStatus.attack +
+          character.job.bonusAttributePerLevel.attack * character.level,
+        defense:
+          character.job.baseStatus.defense +
+          character.job.bonusAttributePerLevel.defense * character.level,
+        speed:
+          character.job.baseStatus.speed +
+          character.job.bonusAttributePerLevel.speed * character.level,
+        critical:
+          character.job.baseStatus.critical +
+          character.job.bonusAttributePerLevel.critical * character.level,
+      },
+    });
+  }, [setCharacter, character]);
+
   return {
     calculateExperienceToNextLevel,
     calculateAddExperience,
     getExperienceProgress,
     getExperienceForLevel,
+    resetStatusPoints,
   };
 };

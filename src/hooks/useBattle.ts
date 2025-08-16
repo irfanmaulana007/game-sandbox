@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Character } from '~/store/character-store';
 import useCharacterStore from '~/store/character-store';
 import type { CharacterStatus } from '~/types/character';
@@ -15,7 +15,16 @@ interface BattleEntity extends CharacterStatus {
   name: string;
 }
 
+interface BattleResult {
+  winner: BattleEntity;
+  finalCharacterHealth: number;
+  finalMonsterHealth: number;
+  battleLog: string[];
+  turnCount: number;
+}
+
 const MAX_TURN = 100;
+
 export const useBattle = ({ character, monster }: useBattleProps) => {
   const { addGold } = useCharacterStore();
   const { calculateAddExperience } = useExperience(character);
@@ -49,16 +58,10 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
     ]
   );
 
-  const [characterHealth, setCharacterHealth] = useState<number>(
-    character.status.health
-  );
-  const [monsterHealth, setMonsterHealth] = useState<number>(monster.health);
-  const [battleTurn, setBattleTurn] = useState<BattleEntity[]>([]);
-  //   const [turnIndex, setTurnIndex] = useState<number>(0);
-  const [battleLog, setBattleLog] = useState<string[]>([]);
-  // const [isBattleReady, setIsBattleReady] = useState<boolean>(false);
+  const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
+  const [isBattleInProgress, setIsBattleInProgress] = useState(false);
 
-  const calculateBattleTurn = useCallback(() => {
+  const calculateBattleTurn = useCallback((): BattleEntity[] => {
     const turn: BattleEntity[] = [];
 
     // Calculate total speed for both entities
@@ -105,73 +108,71 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
       }
     }
 
-    setBattleTurn(turn);
-    // setIsBattleReady(true);
+    return turn;
   }, [characterEntity, monsterEntity]);
 
-  const handleAttack = (attacker: BattleEntity, defender: BattleEntity) => {
-    const isCritical = Math.random() * 100 < attacker.critical;
-    const minAttack = attacker.attack - attacker.attack * 0.3;
-    const maxAttack = attacker.attack + attacker.attack * 0.3;
+  const calculateDamage = useCallback(
+    (attacker: BattleEntity, defender: BattleEntity) => {
+      const isCritical = Math.random() * 100 < attacker.critical;
+      const minAttack = attacker.attack - attacker.attack * 0.3;
+      const maxAttack = attacker.attack + attacker.attack * 0.3;
 
-    const baseDamage = Math.max(
-      0,
-      minAttack + Math.random() * (maxAttack - minAttack)
-    );
-    console.log('🚀 ~ handleAttack ~ baseDamage:', baseDamage);
-    const criticalDamage = isCritical ? 0.5 * baseDamage : 0;
-    console.log('🚀 ~ handleAttack ~ criticalDamage:', criticalDamage);
-    const finalDamage = baseDamage + criticalDamage - defender.defense / 2;
-    console.log('🚀 ~ handleAttack ~ finalDamage:', finalDamage);
-    return { damage: Math.round(finalDamage), isCritical };
-  };
+      const baseDamage = Math.max(
+        0,
+        minAttack + Math.random() * (maxAttack - minAttack)
+      );
 
-  const handleEndBattle = useCallback(
-    (winner: BattleEntity) => {
-      if (winner.entity === 'character') {
-        calculateAddExperience(monster.experience);
-        addGold(monster.gold);
-      }
+      const criticalDamage = isCritical ? 0.5 * baseDamage : 0;
+      const finalDamage = baseDamage + criticalDamage - defender.defense / 2;
+
+      return {
+        damage: Math.round(finalDamage),
+        isCritical,
+      };
     },
-    [calculateAddExperience, addGold, monster.experience, monster.gold]
+    []
   );
 
-  const handleStartBattle = useCallback(() => {
-    // Safety check: don't start battle if turn order is not calculated
-    if (battleTurn.length === 0) {
-      console.warn('Battle turn order not calculated yet');
-      return;
-    }
+  const simulateBattle = useCallback((): BattleResult => {
+    console.log('Simulating battle...');
+    const battleTurn = calculateBattleTurn();
 
-    // Clear previous battle log and reset health
-    setBattleLog([]);
-    setCharacterHealth(character.status.health);
-    setMonsterHealth(monster.health);
-
-    // Use local variables for battle simulation
+    // Initialize battle state
     let currentCharacterHealth = character.status.health;
     let currentMonsterHealth = monster.health;
     const log: string[] = [];
     let winner: BattleEntity | null = null;
+    let turnCount = 0;
+
+    // Add battle start log
+    log.push(
+      `Battle started between ${characterEntity.name} and ${monsterEntity.name}!`
+    );
+    log.push(
+      `Character Health: ${currentCharacterHealth} | Monster Health: ${currentMonsterHealth}`
+    );
 
     for (let i = 0; i < battleTurn.length; i++) {
       const currentTurn = battleTurn[i];
+      turnCount = i + 1;
 
       if (currentTurn.entity === 'character') {
-        const { damage, isCritical } = handleAttack(
+        const { damage, isCritical } = calculateDamage(
           characterEntity,
           monsterEntity
         );
         currentMonsterHealth = Math.max(0, currentMonsterHealth - damage);
+
         log.push(
           `${characterEntity.name} attacks ${monsterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Monster Health: ${currentMonsterHealth} left.`
         );
       } else {
-        const { damage, isCritical } = handleAttack(
+        const { damage, isCritical } = calculateDamage(
           monsterEntity,
           characterEntity
         );
         currentCharacterHealth = Math.max(0, currentCharacterHealth - damage);
+
         log.push(
           `${monsterEntity.name} attacks ${characterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Character Health: ${currentCharacterHealth} left.`
         );
@@ -181,59 +182,95 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
       if (currentCharacterHealth <= 0 || currentMonsterHealth <= 0) {
         winner = currentCharacterHealth > 0 ? characterEntity : monsterEntity;
 
-        log.push(`Battle ended at turn ${i + 1}!`);
-        log.push(`Character Health: ${currentCharacterHealth}`);
-        log.push(`Monster Health: ${currentMonsterHealth}`);
-        log.push(`The winner is ${winner.name}`);
+        log.push(`Battle ended at turn ${turnCount}!`);
+        log.push(`Final Character Health: ${currentCharacterHealth}`);
+        log.push(`Final Monster Health: ${currentMonsterHealth}`);
+        log.push(`The winner is ${winner.name}!`);
 
         if (winner.entity === 'character') {
           log.push(
-            `${winner.entity} wins ${monster.gold} gold and ${monster.experience} experience`
+            `${winner.name} wins ${monster.gold} gold and ${monster.experience} experience!`
           );
           log.push(
-            `experience gains from: ${character.experience} to ${character.experience + monster.experience}`
+            `Gold is gained from ${character.gold} to ${character.gold + monster.gold}!`
+          );
+          log.push(
+            `Experience is gained from ${character.experience} to ${character.experience + monster.experience}!`
           );
         }
         break;
       }
     }
 
-    // Update all states at once after battle simulation
-    setCharacterHealth(currentCharacterHealth);
-    setMonsterHealth(currentMonsterHealth);
-    setBattleLog(log);
-
-    // Handle end battle rewards separately to avoid infinite loops
-    if (winner) {
-      // Use setTimeout to defer the store update and break the render cycle
-      setTimeout(() => {
-        handleEndBattle(winner);
-      }, 0);
+    // If battle reaches max turns, determine winner by remaining health
+    if (!winner) {
+      winner =
+        currentCharacterHealth > currentMonsterHealth
+          ? characterEntity
+          : monsterEntity;
+      log.push(
+        `Battle reached maximum turns! Winner determined by remaining health.`
+      );
+      log.push(`Final Character Health: ${currentCharacterHealth}`);
+      log.push(`Final Monster Health: ${currentMonsterHealth}`);
+      log.push(`The winner is ${winner.name}!`);
     }
+
+    return {
+      winner,
+      finalCharacterHealth: currentCharacterHealth,
+      finalMonsterHealth: currentMonsterHealth,
+      battleLog: log,
+      turnCount,
+    };
   }, [
-    battleTurn,
+    calculateBattleTurn,
+    calculateDamage,
+    character,
+    monster,
     characterEntity,
     monsterEntity,
-    character.status.health,
-    monster.health,
   ]);
 
-  useEffect(() => {
-    calculateBattleTurn();
-  }, [calculateBattleTurn]);
+  const handleStartBattle = useCallback(() => {
+    setIsBattleInProgress(true);
 
-  // Remove the automatic battle start effect to prevent infinite loop
-  // useEffect(() => {
-  //   if (isBattleReady) {
-  //     handleStartBattle();
-  //   }
-  // }, [isBattleReady, handleStartBattle]);
+    try {
+      // Simulate battle synchronously
+      const result = simulateBattle();
+
+      // Update battle result
+      setBattleResult(result);
+
+      // Handle rewards if character wins
+      if (result.winner.entity === 'character') {
+        calculateAddExperience(monster.experience);
+        addGold(monster.gold);
+      }
+    } catch (error) {
+      console.error('Battle simulation failed:', error);
+      // Reset state on error
+      setBattleResult(null);
+    } finally {
+      setIsBattleInProgress(false);
+    }
+  }, [
+    simulateBattle,
+    calculateAddExperience,
+    addGold,
+    monster.experience,
+    monster.gold,
+  ]);
+
+  const resetBattle = useCallback(() => {
+    setBattleResult(null);
+    setIsBattleInProgress(false);
+  }, []);
 
   return {
-    characterHealth,
-    monsterHealth,
-    battleTurn,
-    battleLog,
+    battleResult,
+    isBattleInProgress,
     handleStartBattle,
+    resetBattle,
   };
 };

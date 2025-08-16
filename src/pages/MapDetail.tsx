@@ -17,13 +17,13 @@ const MapDetail: React.FC = () => {
   const { character } = useCharacterStore();
 
   const [selectedMonster, setSelectedMonster] = useState<Monster | null>(null);
-  const [isBattleStart, setIsBattleStart] = useState(false);
+  const [showBattleLog, setShowBattleLog] = useState(false);
 
   const handleExploration = () => {
     const randomMonster =
       mapMonsters[Math.floor(Math.random() * mapMonsters.length)];
     setSelectedMonster(randomMonster);
-    setIsBattleStart(true);
+    setShowBattleLog(true);
   };
 
   const map = MAP.find((m) => m.id === Number(mapId));
@@ -141,8 +141,15 @@ const MapDetail: React.FC = () => {
           </div>
         </div>
 
-        {isBattleStart && selectedMonster && (
-          <BattleLog character={character} monster={selectedMonster} />
+        {/* Battle Section */}
+        {showBattleLog && selectedMonster && (
+          <div className="mb-6">
+            <BattleLog
+              character={character}
+              monster={selectedMonster}
+              onReset={handleExploration}
+            />
+          </div>
         )}
 
         {/* Action Section */}
@@ -151,6 +158,7 @@ const MapDetail: React.FC = () => {
             size="lg"
             className="px-8 py-3 text-lg"
             onClick={handleExploration}
+            disabled={showBattleLog}
           >
             Start Exploration
           </Button>

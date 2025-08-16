@@ -18,9 +18,8 @@ const Character: React.FC = () => {
     cancelAllocation,
     allocateStatusPoint,
     applyAllocation,
-    setCharacter,
   } = useCharacterStore();
-  const { getExperienceProgress } = useExperience(character);
+  const { getExperienceProgress, resetStatusPoints } = useExperience(character);
 
   if (!character) {
     return <Navigate to="/onboarding" />;
@@ -38,17 +37,7 @@ const Character: React.FC = () => {
   };
 
   const resetPoints = () => {
-    setCharacter({
-      ...character,
-      availableStatusPoints: character.level * 2 - 2,
-      status: {
-        health: character.job.baseStatus.health,
-        attack: character.job.baseStatus.attack,
-        defense: character.job.baseStatus.defense,
-        speed: character.job.baseStatus.speed,
-        critical: character.job.baseStatus.critical,
-      },
-    });
+    resetStatusPoints();
   };
 
   const experienceProgress = getExperienceProgress();
