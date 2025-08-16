@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardBody } from '~/components/ui';
 import type { MonsterWithRanges } from '~/types/monster';
 import MonsterDetailModal from './MonsterDetailModal';
+import { numberFormat } from '~/utils/number';
 
 /**
  * MonsterCard - A component for displaying monster information with rank ranges
@@ -150,8 +151,8 @@ const MonsterCard: React.FC<MonsterCardProps> = ({
                   <div
                     className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-xs' : 'text-sm'}`}
                   >
-                    {monster.rankRanges.experience.min}-
-                    {monster.rankRanges.experience.max}
+                    {numberFormat(monster.rankRanges.experience.min)}-
+                    {numberFormat(monster.rankRanges.experience.max)}
                   </div>
                 </div>
 
@@ -168,7 +169,8 @@ const MonsterCard: React.FC<MonsterCardProps> = ({
                   <div
                     className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-xs' : 'text-sm'}`}
                   >
-                    {monster.rankRanges.gold.min}-{monster.rankRanges.gold.max}
+                    {numberFormat(monster.rankRanges.gold.min)}-
+                    {numberFormat(monster.rankRanges.gold.max)}
                   </div>
                 </div>
               </div>

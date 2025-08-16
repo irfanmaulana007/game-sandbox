@@ -7,6 +7,7 @@ import { Navigate } from 'react-router-dom';
 import CharacterStatusBar from '~/components/character-status/CharacterStatusBar';
 import CharacterStatusRadar from '~/components/character-status/CharacterStatusRadar';
 import { useExperience } from '~/hooks/useExperience';
+import { numberFormat } from '~/utils/number';
 
 const Character: React.FC = () => {
   const {
@@ -64,7 +65,7 @@ const Character: React.FC = () => {
                   Level {character.level}
                 </span>
                 <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                  {character.gold} Gold
+                  {numberFormat(character.gold)} Gold
                 </span>
               </div>
             </div>
@@ -75,13 +76,15 @@ const Character: React.FC = () => {
             <div className="mb-2 flex justify-between text-sm text-gray-600 dark:text-gray-400">
               <span>Experience</span>
               <span>
-                {character.experience} XP
+                {numberFormat(character.experience)} XP
                 {!experienceProgress?.isMaxLevel && experienceProgress && (
                   <>
                     {' '}
                     /{' '}
-                    {experienceProgress.experienceNeededForNextLevel +
-                      experienceProgress.experienceInCurrentLevel}{' '}
+                    {numberFormat(
+                      experienceProgress.experienceNeededForNextLevel +
+                        experienceProgress.experienceInCurrentLevel
+                    )}{' '}
                     XP
                   </>
                 )}
@@ -98,9 +101,9 @@ const Character: React.FC = () => {
             </div>
             {experienceProgress && !experienceProgress.isMaxLevel && (
               <div className="mt-1 text-center text-xs text-gray-500">
-                {experienceProgress.experienceInCurrentLevel} /{' '}
-                {experienceProgress.experienceNeededForNextLevel} XP to next
-                level
+                {numberFormat(experienceProgress.experienceInCurrentLevel)} /{' '}
+                {numberFormat(experienceProgress.experienceNeededForNextLevel)}{' '}
+                XP to next level
               </div>
             )}
             {experienceProgress?.isMaxLevel && (
