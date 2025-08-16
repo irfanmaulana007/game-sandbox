@@ -81,7 +81,8 @@ const useCharacterStore = create<CharacterStore>()(
                   attack: state.character.status.attack + attribute.attack,
                   defense: state.character.status.defense + attribute.defense,
                   speed: state.character.status.speed + attribute.speed,
-                  critical: state.character.status.critical + attribute.critical,
+                  critical:
+                    state.character.status.critical + attribute.critical,
                 },
               }
             : null,

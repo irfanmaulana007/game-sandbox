@@ -2,12 +2,12 @@ import { useCallback, useMemo, useState } from 'react';
 import type { Character } from '~/store/character-store';
 import useCharacterStore from '~/store/character-store';
 import type { CharacterStatus } from '~/types/character';
-import type { Monster } from '~/types/monster';
 import { useExperience } from './useExperience';
+import type { BattleMonster } from '~/types/monster';
 
 interface useBattleProps {
   character: Character;
-  monster: Monster;
+  monster: BattleMonster;
 }
 
 interface BattleEntity extends CharacterStatus {
@@ -40,22 +40,15 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
 
   const monsterEntity: BattleEntity = useMemo(
     () => ({
-      attack: monster.attack,
-      defense: monster.defense,
-      speed: monster.speed,
-      critical: monster.critical,
-      health: monster.health,
+      attack: monster.status.attack,
+      defense: monster.status.defense,
+      speed: monster.status.speed,
+      critical: monster.status.critical,
+      health: monster.status.health,
       entity: 'monster' as const,
       name: monster.name,
     }),
-    [
-      monster.attack,
-      monster.defense,
-      monster.speed,
-      monster.critical,
-      monster.health,
-      monster.name,
-    ]
+    [monster.status, monster.name]
   );
 
   const [battleResult, setBattleResult] = useState<BattleResult | null>(null);
@@ -139,7 +132,7 @@ export const useBattle = ({ character, monster }: useBattleProps) => {
 
     // Initialize battle state
     let currentCharacterHealth = character.status.health;
-    let currentMonsterHealth = monster.health;
+    let currentMonsterHealth = monster.status.health;
     const log: string[] = [];
     let winner: BattleEntity | null = null;
     let turnCount = 0;

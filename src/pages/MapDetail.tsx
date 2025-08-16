@@ -1,33 +1,41 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '~/components/layout';
-import { Button, MonsterDetailCard } from '~/components/ui';
+import { Button } from '~/components/ui';
 import { DIFFICULTY_COLORS } from '~/constants/colors';
-import { MAP } from '~/constants/map';
-import { MONSTERS } from '~/constants/monster';
+import { MAPS } from '~/constants/map';
+import { MONSTERS_WITH_RANGES } from '~/constants/monster/index';
 import useCharacterStore from '~/store/character-store';
 import type { MapDifficulty } from '~/types/map';
 import { useCallback } from 'react';
 import BattleLog from '~/components/BattleLog';
-import type { Monster } from '~/types/monster';
+import type { BattleMonster } from '~/types/monster';
+import MonsterCard from '~/components/MonsterCard';
+import { useMonster } from '~/hooks/useMonster';
+
+// Battle monster interface that combines base monster with status
 
 const MapDetail: React.FC = () => {
   const { mapId } = useParams<{ mapId: string }>();
   const navigate = useNavigate();
   const { character } = useCharacterStore();
+  const { getRandomMonster } = useMonster();
 
-  const [selectedMonster, setSelectedMonster] = useState<Monster | null>(null);
+  const [selectedMonster, setSelectedMonster] = useState<BattleMonster | null>(
+    null
+  );
   const [showBattleLog, setShowBattleLog] = useState(false);
 
   const handleExploration = () => {
-    const randomMonster =
-      mapMonsters[Math.floor(Math.random() * mapMonsters.length)];
-    setSelectedMonster(randomMonster);
-    setShowBattleLog(true);
+    const randomMonster = getRandomMonster(Number(mapId));
+    if (randomMonster) {
+      setSelectedMonster(randomMonster);
+      setShowBattleLog(true);
+    }
   };
 
-  const map = MAP.find((m) => m.id === Number(mapId));
-  const mapMonsters = MONSTERS.filter(
+  const map = MAPS.find((m) => m.id === Number(mapId));
+  const mapMonsters = MONSTERS_WITH_RANGES.filter(
     (monster) => monster.mapId === Number(mapId)
   );
 
@@ -132,10 +140,11 @@ const MapDetail: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {mapMonsters.map((monster) => (
-              <MonsterDetailCard
+              <MonsterCard
                 key={monster.id}
                 monster={monster}
                 className="h-fit"
+                variant="compact"
               />
             ))}
           </div>

@@ -1,15 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { useBattle } from '~/hooks';
 import type { Character } from '~/store/character-store';
-import type { Monster } from '~/types/monster';
+import type { BattleMonster } from '~/types/monster';
+
+// Battle monster interface that combines base monster with status
 
 interface BattleLogProps {
   character: Character;
-  monster: Monster;
+  monster: BattleMonster;
   onReset?: () => void;
 }
 
-export default function BattleLog({ character, monster, onReset }: BattleLogProps) {
+export default function BattleLog({
+  character,
+  monster,
+  onReset,
+}: BattleLogProps) {
   const { battleResult, isBattleInProgress, handleStartBattle, resetBattle } =
     useBattle({
       character,
@@ -35,7 +41,7 @@ export default function BattleLog({ character, monster, onReset }: BattleLogProp
   const handleReset = () => {
     hasStartedBattle.current = false; // Reset the flag
     resetBattle();
-    
+
     // Call the parent's onReset to randomize monster and restart
     if (onReset) {
       onReset();
@@ -91,7 +97,7 @@ export default function BattleLog({ character, monster, onReset }: BattleLogProp
               Monster:
             </span>
             <span className="ml-2 font-bold text-gray-800 dark:text-white">
-              {monster.name}
+              {monster.name} ({monster.rank})
             </span>
           </div>
           <div>

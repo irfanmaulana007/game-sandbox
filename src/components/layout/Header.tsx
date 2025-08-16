@@ -10,6 +10,7 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-4">
               <Link to="/">Home</Link>
               <Link to="/character">Character</Link>
+              <Link to="/inventory">Inventory</Link>
             </div>
           </div>
         </div>

@@ -1,151 +1,190 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardBody } from '~/components/ui';
-import { MAX_HEALTH, MAX_STATUS } from '~/constants/characters/job';
-import type { Monster } from '~/types/monster';
-import { CharacterStatusBarItem } from './character-status/CharacterStatusBar';
+import type { MonsterWithRanges } from '~/types/monster';
+import MonsterDetailModal from './MonsterDetailModal';
 
 /**
- * MonsterDetailCard - A comprehensive component for displaying monster information
+ * MonsterCard - A component for displaying monster information with rank ranges
  *
- * @param monster - The monster data to display
- * @param showHeader - Whether to show the monster name, level, and description header
+ * @param monster - The monster data with ranges to display
+ * @param showHeader - Whether to show the monster name and description header
  * @param className - Additional CSS classes to apply
  * @param variant - Display variant: 'default' for full size, 'compact' for smaller display
  *
  * @example
  * // Full monster card
- * <MonsterDetailCard monster={monsterData} />
+ * <MonsterCard monster={monsterData} />
  *
  * // Compact monster card without header
- * <MonsterDetailCard
+ * <MonsterCard
  *   monster={monsterData}
  *   showHeader={false}
  *   variant="compact"
  * />
  *
  * // Custom styling
- * <MonsterDetailCard
+ * <MonsterCard
  *   monster={monsterData}
  *   className="border-2 border-red-500"
  * />
  */
-interface MonsterDetailCardProps {
-  monster: Monster;
+interface MonsterCardProps {
+  monster: MonsterWithRanges;
   showHeader?: boolean;
   className?: string;
   variant?: 'default' | 'compact';
 }
 
-const MonsterDetailCard: React.FC<MonsterDetailCardProps> = ({
+const MonsterCard: React.FC<MonsterCardProps> = ({
   monster,
   showHeader = true,
   className = '',
   variant = 'default',
 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const isCompact = variant === 'compact';
   const spacing = isCompact ? 'space-y-3' : 'space-y-4';
 
   return (
-    <Card
-      className={`transition-all duration-200 hover:shadow-lg ${className} ${isCompact ? 'p-2' : 'p-4'}`}
-    >
-      <CardBody>
-        <div className={spacing}>
-          {/* Header Section */}
-          {showHeader && (
-            <div
-              className={`border-b border-gray-200 pb-2 dark:border-gray-600 ${isCompact ? 'pb-1' : ''}`}
-            >
-              <div className="flex items-center justify-between">
-                <h3
-                  className={`font-bold text-gray-800 dark:text-white ${isCompact ? 'text-base' : 'text-lg'}`}
-                >
-                  {monster.name}
-                </h3>
-                <div className="flex items-center gap-1">
-                  <span
-                    className={`font-medium text-gray-500 ${isCompact ? 'text-xs' : 'text-xs'}`}
-                  >
-                    Lv
-                  </span>
-                  <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    {monster.level}
-                  </span>
-                </div>
-              </div>
-              <p
-                className={`mt-1 text-gray-600 dark:text-gray-300 ${isCompact ? 'text-xs' : 'text-sm'}`}
+    <div className="cursor-pointer" onClick={() => setIsModalOpen(true)}>
+      <Card
+        className={`transition-all duration-200 hover:shadow-lg ${className} ${isCompact ? 'p-2' : 'p-4'}`}
+      >
+        <CardBody>
+          <div className={spacing}>
+            {/* Header Section */}
+            {showHeader && (
+              <div
+                className={`border-b border-gray-200 pb-2 dark:border-gray-600 ${isCompact ? 'pb-1' : ''}`}
               >
-                {monster.description}
-              </p>
-            </div>
-          )}
-
-          {/* Status Bars Section */}
-          <div className={isCompact ? 'space-y-1.5' : 'space-y-2'}>
-            <CharacterStatusBarItem
-              name="Health"
-              value={monster.health}
-              maxValue={MAX_HEALTH}
-            />
-            <CharacterStatusBarItem
-              name="Attack"
-              value={monster.attack}
-              maxValue={MAX_STATUS}
-            />
-            <CharacterStatusBarItem
-              name="Defense"
-              value={monster.defense}
-              maxValue={MAX_STATUS}
-            />
-            <CharacterStatusBarItem
-              name="Speed"
-              value={monster.speed}
-              maxValue={MAX_STATUS}
-            />
-            <CharacterStatusBarItem
-              name="Critical"
-              value={monster.critical}
-              maxValue={MAX_STATUS}
-            />
-          </div>
-
-          {/* Rewards Section */}
-          <div
-            className={`border-t border-gray-200 pt-2 dark:border-gray-600 ${isCompact ? 'pt-1.5' : ''}`}
-          >
-            <div className="flex gap-3">
-              <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-yellow-50 px-4 py-2 dark:bg-yellow-900/20">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-800">
-                  <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400">
-                    XP
-                  </span>
+                <div className="flex items-center justify-between">
+                  <h3
+                    className={`font-bold text-gray-800 dark:text-white ${isCompact ? 'text-base' : 'text-lg'}`}
+                  >
+                    {monster.name}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`font-medium text-gray-500 ${isCompact ? 'text-xs' : 'text-xs'}`}
+                    >
+                      Lv
+                    </span>
+                    <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                      {monster.rankRanges.level.min}-
+                      {monster.rankRanges.level.max}
+                    </span>
+                  </div>
                 </div>
-                <div
-                  className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-sm' : 'text-base'}`}
+                <p
+                  className={`mt-1 text-gray-600 dark:text-gray-300 ${isCompact ? 'text-xs' : 'text-sm'}`}
                 >
-                  {monster.experience}
+                  {monster.description}
+                </p>
+              </div>
+            )}
+
+            {/* Status Bars Section - Show ranges */}
+            <div className={isCompact ? 'space-y-1.5' : 'space-y-2'}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Health
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {monster.rankRanges.status.health.min}-
+                  {monster.rankRanges.status.health.max}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Attack
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {monster.rankRanges.status.attack.min}-
+                  {monster.rankRanges.status.attack.max}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Defense
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {monster.rankRanges.status.defense.min}-
+                  {monster.rankRanges.status.defense.max}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Speed
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {monster.rankRanges.status.speed.min}-
+                  {monster.rankRanges.status.speed.max}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Critical
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {monster.rankRanges.status.critical.min}-
+                  {monster.rankRanges.status.critical.max}
+                </span>
+              </div>
+            </div>
+
+            {/* Rewards Section - Show ranges */}
+            <div
+              className={`border-t border-gray-200 pt-2 dark:border-gray-600 ${isCompact ? 'pt-1.5' : ''}`}
+            >
+              <div className={`flex gap-3 ${isCompact ? 'gap-1' : ''}`}>
+                <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-yellow-50 px-4 py-2 dark:bg-yellow-900/20">
+                  <div
+                    className={`flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-800 ${isCompact ? 'h-5 w-5' : 'h-6 w-6'}`}
+                  >
+                    <span
+                      className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-2xs' : 'text-sm'}`}
+                    >
+                      XP
+                    </span>
+                  </div>
+                  <div
+                    className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-xs' : 'text-sm'}`}
+                  >
+                    {monster.rankRanges.experience.min}-
+                    {monster.rankRanges.experience.max}
+                  </div>
+                </div>
+
+                <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-yellow-50 px-4 py-2 dark:bg-yellow-900/20">
+                  <div
+                    className={`flex items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-800 ${isCompact ? 'h-5 w-5' : 'h-6 w-6'}`}
+                  >
+                    <span
+                      className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-xs' : 'text-sm'}`}
+                    >
+                      💰
+                    </span>
+                  </div>
+                  <div
+                    className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-xs' : 'text-sm'}`}
+                  >
+                    {monster.rankRanges.gold.min}-{monster.rankRanges.gold.max}
+                  </div>
                 </div>
               </div>
-
-              <div className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-yellow-50 px-4 py-2 dark:bg-yellow-900/20">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-800">
-                  <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400">
-                    💰
-                  </span>
-                </div>
-                <div
-                  className={`font-bold text-yellow-600 dark:text-yellow-400 ${isCompact ? 'text-sm' : 'text-base'}`}
-                >
-                  {monster.gold}
-                </div>
-              </div>
             </div>
           </div>
-        </div>
-      </CardBody>
-    </Card>
+        </CardBody>
+
+        {/* Monster Detail Modal */}
+        <MonsterDetailModal
+          monster={monster}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      </Card>
+    </div>
   );
 };
 
-export default MonsterDetailCard;
+export default MonsterCard;
