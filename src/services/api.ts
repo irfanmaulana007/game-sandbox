@@ -3,6 +3,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from 'axios';
+import { toast } from 'sonner';
 
 // API Configuration
 const API_BASE_URL =
@@ -63,34 +64,62 @@ api.interceptors.response.use(
     // Handle common errors
     if (error.response) {
       const { status, data } = error.response;
+      console.log('🚀 ~ error.response:', error.response);
 
       switch (status) {
+        case 400:
+          // Bad request
+          toast.error('Bad request', {
+            description: data.error,
+          });
+          break;
         case 401:
           // Unauthorized - clear token and redirect to login
           localStorage.removeItem('auth_token');
           window.location.href = '/login';
+          toast.error('Unauthorized', {
+            description: data.error,
+          });
           break;
         case 403:
           // Forbidden
           console.error('Access forbidden:', data);
+          toast.error('Forbidden', {
+            description: data.error,
+          });
           break;
         case 404:
           // Not found
           console.error('Resource not found:', data);
+          toast.error('Not found', {
+            description: data.error,
+          });
           break;
         case 500:
           // Server error
           console.error('Server error:', data);
+          toast.error('Server error', {
+            description: data.error,
+          });
           break;
         default:
+          toast.error('API Error', {
+            description: data.error,
+          });
           console.error(`API Error ${status}:`, data);
       }
     } else if (error.request) {
       // Network error
       console.error('Network error:', error.message);
+      toast.error('Network error', {
+        description: error.message,
+      });
     } else {
       // Other error
       console.error('API Error:', error.message);
+      toast.error('API Error', {
+        description: error.message,
+      });
     }
 
     return Promise.reject(error);

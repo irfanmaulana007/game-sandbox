@@ -1,14 +1,14 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { authService } from '~/services/auth-service';
-import type { UserModelType as User } from '@game-sandbox/types';
 import { AuthContext, type AuthContextType } from '~/context/auth-context';
+import type { Users } from '~/types/model/schema';
 
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<Users | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuth = async () => {

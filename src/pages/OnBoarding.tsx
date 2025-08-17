@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import CharacterSelection from '~/components/CharacterSelection';
 import { Button, Card, CardBody, CardHeader } from '~/components/ui';
 import type { CharacterJob } from '~/types/character';
-import useCharacterStore from '~/store/character-store';
 import JOB_LIST from '~/constants/characters/job';
 import { useNavigate } from 'react-router-dom';
+import { useCreateCharacter } from '~/services/character-service';
 
 const OnBoarding: React.FC = () => {
   const navigate = useNavigate();
-  const { setCharacter } = useCharacterStore();
+  const { mutate: createCharacter } = useCreateCharacter();
+
   const [characterName, setCharacterName] = useState('');
   const [selectedJob, setSelectedJob] = useState<CharacterJob>(JOB_LIST[0]);
   const [currentStep, setCurrentStep] = useState(1);
@@ -59,17 +60,15 @@ const OnBoarding: React.FC = () => {
   const handleSubmit = () => {
     if (!validateForm()) return;
 
-    setCharacter({
+    const character = {
       name: characterName.trim(),
-      status: selectedJob.baseStatus,
-      level: 1,
-      job: selectedJob,
-      experience: 0,
-      gold: 0,
-      availableStatusPoints: 0,
+      job_id: selectedJob.id,
+    };
+    createCharacter(character, {
+      onSuccess: () => {
+        navigate('/character');
+      },
     });
-
-    navigate('/character');
   };
 
   const handleNext = () => {

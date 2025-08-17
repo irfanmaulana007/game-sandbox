@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
-import type { UserModelType as User } from '@game-sandbox/types';
+import type { Users } from '~/types/model/schema';
 
 export interface AuthContextType {
-  user: User | null;
+  user: Users | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
@@ -15,7 +15,9 @@ export interface AuthContextType {
   checkAuth: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);

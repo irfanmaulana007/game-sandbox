@@ -13,10 +13,10 @@
     "generate": "tsx src/scripts/generator/map/index.ts",
     "auto-generate": "node src/scripts/generator/map/auto-generate.js",
     "generate:equipment": "tsx src/scripts/generator/equipment/index.ts",
-    "auto-generate:equipment": "node src/scripts/generator/equipment/auto-generate.js"
+    "auto-generate:equipment": "node src/scripts/generator/equipment/auto-generate.js",
+    "generate-types": "pg-to-ts generate -c postgres://irfanmaulana007:password@localhost:5432/game -o src/types/model/schema.ts"
   },
   "dependencies": {
-    "@game-sandbox/types": "^1.0.0",
     "@prisma/client": "^6.14.0",
     "@tanstack/react-query": "^5.85.3",
     "@tanstack/react-query-devtools": "^5.85.3",
@@ -44,6 +44,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "pg-to-ts": "^4.1.1",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.14",

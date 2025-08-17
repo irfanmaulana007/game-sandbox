@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from './api';
 import type { BaseResponse } from '~/types/api';
-import type { UserModelType as User } from '@game-sandbox/types';
+import type { Users } from '~/types/model/schema';
 
 // Auth types
 export interface LoginCredentials {
@@ -17,7 +17,7 @@ export interface RegisterData {
 }
 
 export interface AuthResponse {
-  user: User;
+  user: Users;
   token: string;
   refreshToken: string;
   expiresIn: number;
@@ -126,8 +126,10 @@ export const authService = {
   },
 
   // Get user
-  getUser: async (): Promise<BaseResponse<User>> => {
-    const response = await apiClient.get<BaseResponse<User>>(AUTH_ENDPOINTS.getUser);
+  getUser: async (): Promise<BaseResponse<Users>> => {
+    const response = await apiClient.get<BaseResponse<Users>>(
+      AUTH_ENDPOINTS.getUser
+    );
     return response;
   },
 };
