@@ -5,6 +5,7 @@ import { Home, MapDetail } from './pages';
 import Inventory from './pages/Inventory';
 import Character from './pages/Character';
 import OnBoarding from './pages/OnBoarding';
+import Equipment from './pages/Equipment';
 import './App.css';
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
         <Route path="/onboarding" element={<OnBoarding />} />
         <Route path="/map/:mapId" element={<MapDetail />} />
         <Route path="/inventory" element={<Inventory />} />
+        <Route path="/equipment" element={<Equipment />} />
       </Routes>
     </Router>
   );

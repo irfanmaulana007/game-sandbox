@@ -6,7 +6,11 @@ import {
 import useCharacterStore, { type Character } from '~/store/character-store';
 
 export interface LevelUpCallback {
-  (character: Character, previousLevel: number, previousStatus: Character['status']): void;
+  (
+    character: Character,
+    previousLevel: number,
+    previousStatus: Character['status']
+  ): void;
 }
 
 export const useExperience = (
@@ -116,7 +120,7 @@ export const useExperience = (
         // Store previous state for level up callback
         const previousLevel = currentLevel;
         const previousStatus = { ...character.status };
-        
+
         // Calculate how many levels to add
         const levelsToAdd = newLevel - currentLevel;
         addStatusPoint(BONUS_STATUS_POINT_PER_LEVEL);

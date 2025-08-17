@@ -22,7 +22,8 @@ const MapDetail: React.FC = () => {
   const navigate = useNavigate();
   const { character } = useCharacterStore();
   const { getRandomMonster } = useMonster();
-  const { levelUpState, showLevelUp, hideLevelUp, updatePreviousCharacter } = useLevelUp();
+  const { levelUpState, showLevelUp, hideLevelUp, updatePreviousCharacter } =
+    useLevelUp();
 
   const [selectedMonster, setSelectedMonster] = useState<BattleMonster | null>(
     null

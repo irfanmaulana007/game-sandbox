@@ -36,7 +36,7 @@ export const useLevelUp = () => {
   }, []);
 
   const hideLevelUp = useCallback(() => {
-    setLevelUpState(prev => ({
+    setLevelUpState((prev) => ({
       ...prev,
       isVisible: false,
     }));

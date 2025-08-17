@@ -11,7 +11,9 @@
     "format": "prettier --write .",
     "preview": "vite preview",
     "generate": "tsx src/scripts/generator/map/index.ts",
-    "auto-generate": "node src/scripts/generator/map/auto-generate.js"
+    "auto-generate": "node src/scripts/generator/map/auto-generate.js",
+    "generate:equipment": "tsx src/scripts/generator/equipment/index.ts",
+    "auto-generate:equipment": "node src/scripts/generator/equipment/auto-generate.js"
   },
   "dependencies": {
     "react": "^19.1.1",
