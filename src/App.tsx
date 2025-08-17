@@ -1,6 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Home, MapDetail } from './pages';
+import { Home, MapDetail, Login, Register } from './pages';
+import { QueryProvider } from './services/QueryProvider';
+import { AuthProvider } from './providers/AuthProvider';
+import { ToastProvider } from './providers/ToastProvider';
+import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import Inventory from './pages/Inventory';
 import Character from './pages/Character';
@@ -10,16 +15,82 @@ import './App.css';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/character" element={<Character />} />
-        <Route path="/onboarding" element={<OnBoarding />} />
-        <Route path="/map/:mapId" element={<MapDetail />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/equipment" element={<Equipment />} />
-      </Routes>
-    </Router>
+    <ToastProvider>
+      <ErrorBoundary>
+        <QueryProvider>
+          <AuthProvider>
+            <Router>
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute requireAuth={false}>
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/login"
+                  element={
+                    <ProtectedRoute requireAuth={false} redirectTo="/">
+                      <Login />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <ProtectedRoute requireAuth={false} redirectTo="/">
+                      <Register />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/character"
+                  element={
+                    <ProtectedRoute>
+                      <Character />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/onboarding"
+                  element={
+                    <ProtectedRoute>
+                      <OnBoarding />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/map/:mapId"
+                  element={
+                    <ProtectedRoute>
+                      <MapDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/inventory"
+                  element={
+                    <ProtectedRoute>
+                      <Inventory />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/equipment"
+                  element={
+                    <ProtectedRoute>
+                      <Equipment />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </Router>
+          </AuthProvider>
+        </QueryProvider>
+      </ErrorBoundary>
+    </ToastProvider>
   );
 };
 
