@@ -161,14 +161,14 @@ export default function BattleLog({
       {/* Battle Log */}
       <div className="max-h-96 overflow-y-auto rounded-lg bg-gray-900 p-4 font-mono text-sm">
         {battleResult.battleLog.map((log, index) => {
-          const isMonsterAttackingLog = log.includes(`${monster.name} attacks`);
+          const isDamageReceived = log.category === 'damageReceived';
 
           return (
             <div
               key={index}
-              className={`mb-1 ${isMonsterAttackingLog ? 'text-red-400' : 'text-green-400'}`}
+              className={`mb-1 ${isDamageReceived ? 'text-red-400' : 'text-green-400'}`}
             >
-              {log}
+              {log.message}
             </div>
           );
         })}

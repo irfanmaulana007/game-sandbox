@@ -8,7 +8,11 @@ import type { BattleMonster } from '~/types/monster';
 interface useBattleProps {
   character: Character;
   monster: BattleMonster;
-  onLevelUp?: (character: Character, previousLevel: number, previousStatus: Character['status']) => void;
+  onLevelUp?: (
+    character: Character,
+    previousLevel: number,
+    previousStatus: Character['status']
+  ) => void;
 }
 
 interface BattleEntity extends CharacterStatus {
@@ -16,17 +20,31 @@ interface BattleEntity extends CharacterStatus {
   name: string;
 }
 
+interface BattleLog {
+  category:
+    | 'damageDealt'
+    | 'damageReceived'
+    | 'criticalHit'
+    | 'battleReward'
+    | 'information';
+  message: string;
+}
+
 interface BattleResult {
   winner: BattleEntity;
   finalCharacterHealth: number;
   finalMonsterHealth: number;
-  battleLog: string[];
+  battleLog: BattleLog[];
   turnCount: number;
 }
 
 const MAX_TURN = 100;
 
-export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => {
+export const useBattle = ({
+  character,
+  monster,
+  onLevelUp,
+}: useBattleProps) => {
   const { addGold } = useCharacterStore();
   const { calculateAddExperience } = useExperience(character, onLevelUp);
 
@@ -107,7 +125,9 @@ export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => 
 
   const calculateDamage = useCallback(
     (attacker: BattleEntity, defender: BattleEntity) => {
-      const isCritical = Math.random() * 100 < attacker.critical;
+      const criticalResist = defender.defense / 2;
+      const isCritical =
+        Math.random() * 100 < attacker.critical - criticalResist;
       const minAttack = attacker.attack - attacker.attack * 0.3;
       const maxAttack = attacker.attack + attacker.attack * 0.3;
 
@@ -128,23 +148,28 @@ export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => 
   );
 
   const simulateBattle = useCallback((): BattleResult => {
-    console.log('Simulating battle...');
     const battleTurn = calculateBattleTurn();
 
     // Initialize battle state
     let currentCharacterHealth = character.status.health;
     let currentMonsterHealth = monster.status.health;
-    const log: string[] = [];
+    const log: BattleLog[] = [];
     let winner: BattleEntity | null = null;
     let turnCount = 0;
 
     // Add battle start log
-    log.push(
-      `Battle started between ${characterEntity.name} and ${monsterEntity.name}!`
-    );
-    log.push(
-      `Character Health: ${currentCharacterHealth} | Monster Health: ${currentMonsterHealth}`
-    );
+    log.push({
+      category: 'information',
+      message: `Battle started between ${characterEntity.name} and ${monsterEntity.name}!`,
+    });
+    log.push({
+      category: 'information',
+      message: `Character Health: ${currentCharacterHealth} | Monster Health: ${currentMonsterHealth}`,
+    });
+    log.push({
+      category: 'information',
+      message: '==============================================================',
+    });
 
     for (let i = 0; i < battleTurn.length; i++) {
       const currentTurn = battleTurn[i];
@@ -157,9 +182,10 @@ export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => 
         );
         currentMonsterHealth = Math.max(0, currentMonsterHealth - damage);
 
-        log.push(
-          `${characterEntity.name} attacks ${monsterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Monster Health: ${currentMonsterHealth} left.`
-        );
+        log.push({
+          category: 'damageDealt',
+          message: `${characterEntity.name} attacks ${monsterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Monster Health: ${currentMonsterHealth} left.`,
+        });
       } else {
         const { damage, isCritical } = calculateDamage(
           monsterEntity,
@@ -167,30 +193,51 @@ export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => 
         );
         currentCharacterHealth = Math.max(0, currentCharacterHealth - damage);
 
-        log.push(
-          `${monsterEntity.name} attacks ${characterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Character Health: ${currentCharacterHealth} left.`
-        );
+        log.push({
+          category: 'damageReceived',
+          message: `${monsterEntity.name} attacks ${characterEntity.name} for ${damage} damage. ${isCritical ? 'Critical hit!' : ''} Character Health: ${currentCharacterHealth} left.`,
+        });
       }
 
       // Check if battle should end early
       if (currentCharacterHealth <= 0 || currentMonsterHealth <= 0) {
         winner = currentCharacterHealth > 0 ? characterEntity : monsterEntity;
 
-        log.push(`Battle ended at turn ${turnCount}!`);
-        log.push(`Final Character Health: ${currentCharacterHealth}`);
-        log.push(`Final Monster Health: ${currentMonsterHealth}`);
-        log.push(`The winner is ${winner.name}!`);
+        log.push({
+          category: 'information',
+          message:
+            '==============================================================',
+        });
+        log.push({
+          category: 'information',
+          message: `Battle ended at turn ${turnCount}!`,
+        });
+        log.push({
+          category: 'information',
+          message: `Final Character Health: ${currentCharacterHealth}`,
+        });
+        log.push({
+          category: 'information',
+          message: `Final Monster Health: ${currentMonsterHealth}`,
+        });
+        log.push({
+          category: 'information',
+          message: `The winner is ${winner.name}!`,
+        });
 
         if (winner.entity === 'character') {
-          log.push(
-            `${winner.name} wins ${monster.gold} gold and ${monster.experience} experience!`
-          );
-          log.push(
-            `Gold is gained from ${character.gold} to ${character.gold + monster.gold}!`
-          );
-          log.push(
-            `Experience is gained from ${character.experience} to ${character.experience + monster.experience}!`
-          );
+          log.push({
+            category: 'battleReward',
+            message: `${winner.name} wins ${monster.gold} gold and ${monster.experience} experience!`,
+          });
+          log.push({
+            category: 'battleReward',
+            message: `Gold is gained from ${character.gold} to ${character.gold + monster.gold}!`,
+          });
+          log.push({
+            category: 'battleReward',
+            message: `Experience is gained from ${character.experience} to ${character.experience + monster.experience}!`,
+          });
         }
         break;
       }
@@ -202,12 +249,22 @@ export const useBattle = ({ character, monster, onLevelUp }: useBattleProps) => 
         currentCharacterHealth > currentMonsterHealth
           ? characterEntity
           : monsterEntity;
-      log.push(
-        `Battle reached maximum turns! Winner determined by remaining health.`
-      );
-      log.push(`Final Character Health: ${currentCharacterHealth}`);
-      log.push(`Final Monster Health: ${currentMonsterHealth}`);
-      log.push(`The winner is ${winner.name}!`);
+      log.push({
+        category: 'information',
+        message: `Battle reached maximum turns! Winner determined by remaining health.`,
+      });
+      log.push({
+        category: 'information',
+        message: `Final Character Health: ${currentCharacterHealth}`,
+      });
+      log.push({
+        category: 'information',
+        message: `Final Monster Health: ${currentMonsterHealth}`,
+      });
+      log.push({
+        category: 'information',
+        message: `The winner is ${winner.name}!`,
+      });
     }
 
     return {
