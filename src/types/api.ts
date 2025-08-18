@@ -10,3 +10,9 @@ export interface BaseResponse<T> {
     totalPages: number;
   };
 }
+
+export interface BaseRequest {
+  limit?: number;
+  page?: number;
+  search?: string;
+}

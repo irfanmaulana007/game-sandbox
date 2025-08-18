@@ -5,10 +5,3 @@ export interface CharacterStatus {
   speed: number;
   critical: number;
 }
-
-export interface CharacterJob {
-  id: number;
-  name: string;
-  baseStatus: CharacterStatus;
-  bonusAttributePerLevel: CharacterStatus;
-}

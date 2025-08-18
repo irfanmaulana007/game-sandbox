@@ -1,48 +1,20 @@
 import React from 'react';
 import { Card, CardHeader, CardBody } from '~/components/ui/Card';
 import Button from '~/components/ui/Button';
-import { classNames } from '~/utils';
-import type { CharacterStatus } from '~/types/character';
-import type { Character } from '~/store/character-store';
+import type { CharacterWithJob } from '~/types/model/character';
 
 interface LevelUpModalProps {
   isVisible: boolean;
   onClose: () => void;
-  character: Character | null;
-  previousLevel: number;
-  previousStatus: CharacterStatus;
+  character: CharacterWithJob | null;
 }
 
 const LevelUpModal: React.FC<LevelUpModalProps> = ({
   isVisible,
   onClose,
   character,
-  previousLevel,
-  previousStatus,
 }) => {
   if (!isVisible || !character) return null;
-
-  const currentLevel = character.level;
-  const currentStatus = character.status;
-
-  const getStatusChange = (key: keyof CharacterStatus) => {
-    const previous = previousStatus[key];
-    const current = currentStatus[key];
-    const change = current - previous;
-    return { previous, current, change };
-  };
-
-  const getStatusColor = (change: number) => {
-    if (change > 0) return 'text-green-600 dark:text-green-400';
-    if (change < 0) return 'text-red-600 dark:text-red-400';
-    return 'text-gray-600 dark:text-gray-400';
-  };
-
-  const getStatusIcon = (change: number) => {
-    if (change > 0) return '↗';
-    if (change < 0) return '↘';
-    return '→';
-  };
 
   return (
     <div className="animate-in slide-in-from-bottom-2 fixed bottom-6 right-6 z-50 duration-300">
@@ -88,7 +60,7 @@ const LevelUpModal: React.FC<LevelUpModalProps> = ({
                 Level Up
               </span>
               <span className="text-lg font-bold text-gray-800 dark:text-white">
-                {previousLevel} → {currentLevel}
+                {character.level - 1} → {character.level}
               </span>
             </div>
           </div>
@@ -98,40 +70,60 @@ const LevelUpModal: React.FC<LevelUpModalProps> = ({
             <h4 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
               Status Changes
             </h4>
-            {(
-              ['health', 'attack', 'defense', 'speed', 'critical'] as const
-            ).map((statusKey) => {
-              const { previous, current, change } = getStatusChange(statusKey);
-              const statusName =
-                statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
-
-              return (
-                <div
-                  key={statusKey}
-                  className="flex items-center justify-between rounded-md border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    {statusName}
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {previous}
-                    </span>
-                    <span
-                      className={classNames(
-                        'text-sm font-semibold',
-                        getStatusColor(change)
-                      )}
-                    >
-                      {getStatusIcon(change)} {current}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+            <StatusChangeItem
+              statusName="Health"
+              statusValue={character.max_health}
+              statusChange={character.job.health_per_level}
+            />
+            <StatusChangeItem
+              statusName="Attack"
+              statusValue={character.attack}
+              statusChange={character.job.attack_per_level}
+            />
+            <StatusChangeItem
+              statusName="Defense"
+              statusValue={character.defense}
+              statusChange={character.job.defense_per_level}
+            />
+            <StatusChangeItem
+              statusName="Speed"
+              statusValue={character.speed}
+              statusChange={character.job.speed_per_level}
+            />
+            <StatusChangeItem
+              statusName="Critical"
+              statusValue={character.critical}
+              statusChange={character.job.critical_per_level}
+            />
           </div>
         </CardBody>
       </Card>
+    </div>
+  );
+};
+
+const StatusChangeItem = ({
+  statusName,
+  statusValue,
+  statusChange,
+}: {
+  statusName: string;
+  statusValue: number;
+  statusChange: number;
+}) => {
+  return (
+    <div className="flex items-center justify-between rounded-md border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-800">
+      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+        {statusName}
+      </span>
+      <div className="flex items-center space-x-2">
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {statusValue - statusChange}
+        </span>
+        <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+          ↗ {statusValue}
+        </span>
+      </div>
     </div>
   );
 };

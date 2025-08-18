@@ -17,7 +17,6 @@
     "generate-types": "pg-to-ts generate -c postgres://irfanmaulana007:password@localhost:5432/game -o src/types/model/schema.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.14.0",
     "@tanstack/react-query": "^5.85.3",
     "@tanstack/react-query-devtools": "^5.85.3",
     "axios": "^1.11.0",

@@ -1,13 +1,12 @@
-import type { Map } from '~/types/map';
 import { Card, CardBody, Button } from '~/components/ui';
 import { DIFFICULTY_COLORS } from '~/constants/colors';
-import useCharacterStore from '~/store/character-store';
-import { useCallback } from 'react';
-import type { MapDifficulty } from '~/types/map';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { Maps } from '~/types/model/schema';
+import { useMyCharacter } from '~/services/character-service';
 
 interface MapProps {
-  map: Map;
+  map: Maps;
   isSelected?: boolean;
   onClick?: () => void;
 }
@@ -17,17 +16,17 @@ export default function MapCard({
   isSelected = false,
   onClick,
 }: MapProps) {
-  const { character } = useCharacterStore();
+  const { data } = useMyCharacter();
   const navigate = useNavigate();
 
-  const getDifficulty = useCallback((): MapDifficulty => {
-    if (!character) return 'easy';
+  const character = data?.data;
 
-    if (map.minLevel - character.level <= 0) return 'easy';
-    if (map.minLevel - character.level <= 2) return 'medium';
-    if (map.minLevel - character.level <= 4) return 'hard';
-    return 'very_hard';
-  }, [character, map.minLevel]);
+  const recommendedLevel = useMemo(() => {
+    const minLevel = map.min_level;
+    const maxLevel = map.max_level;
+
+    return Math.floor((minLevel + maxLevel) / 2) + 1;
+  }, [map]);
 
   const handleEnterMap = () => {
     navigate(`/map/${map.id}`);
@@ -50,7 +49,7 @@ export default function MapCard({
               <div className="flex items-center gap-3">
                 <div className="flex-1">
                   <h3
-                    className={`text-xl font-bold ${DIFFICULTY_COLORS[getDifficulty()]}`}
+                    className={`text-xl font-bold ${DIFFICULTY_COLORS[map.difficulty]}`}
                   >
                     {map.name}
                   </h3>
@@ -62,9 +61,9 @@ export default function MapCard({
                     Min Level
                   </span>
                   <span
-                    className={`text-xs font-semibold ${DIFFICULTY_COLORS[getDifficulty()]}`}
+                    className={`text-xs font-semibold ${DIFFICULTY_COLORS[map.difficulty]}`}
                   >
-                    {map.minLevel}
+                    {map.min_level}
                   </span>
                 </div>
                 <div className="flex items-center gap-x-2">
@@ -72,9 +71,9 @@ export default function MapCard({
                     Recommended
                   </span>
                   <span
-                    className={`text-xs font-semibold ${DIFFICULTY_COLORS[getDifficulty()]}`}
+                    className={`text-xs font-semibold ${DIFFICULTY_COLORS[map.difficulty]}`}
                   >
-                    {map.recommendedLevel}
+                    {recommendedLevel}
                   </span>
                 </div>
               </div>
@@ -89,7 +88,7 @@ export default function MapCard({
               <Button
                 className="w-full"
                 onClick={handleEnterMap}
-                disabled={character.level < map.minLevel}
+                disabled={character.level < map.min_level}
               >
                 Enter Map
               </Button>

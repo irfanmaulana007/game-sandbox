@@ -1,11 +1,12 @@
 import React from 'react';
 import { Card, CardBody, Modal } from '~/components/ui';
-import type { BattleMonster, MonsterWithRanges } from '~/types/monster';
-import { MONSTER_DETAILS } from '~/constants/monster';
+import type { MonsterDetail } from '~/types/monster';
 import { MAX_HEALTH, MAX_STATUS } from '~/constants/characters/job';
+import { useMonsterDetailDetail } from '~/services/monster-service';
+import type { Monsters } from '~/types/model/schema';
 
 interface MonsterDetailModalProps {
-  monster: MonsterWithRanges;
+  monster: MonsterDetail;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -15,12 +16,8 @@ const MonsterDetailModal: React.FC<MonsterDetailModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const monsters: BattleMonster[] = MONSTER_DETAILS.filter(
-    (monsterDetail) => monsterDetail.monsterId === monster.id
-  ).map((monsterDetail) => ({
-    ...monster,
-    ...monsterDetail,
-  }));
+  const { data: monsterDetail } = useMonsterDetailDetail(monster.id);
+  const monsters = monsterDetail?.data.monsters || [];
 
   return (
     <Modal
@@ -38,9 +35,9 @@ const MonsterDetailModal: React.FC<MonsterDetailModalProps> = ({
   );
 };
 
-const MonsterCardDetailItem = ({ monster }: { monster: BattleMonster }) => {
+const MonsterCardDetailItem = ({ monster }: { monster: Monsters }) => {
   return (
-    <Card className="p-2 transition-all duration-200 hover:shadow-lg">
+    <Card className="p-2">
       <CardBody>
         <div>
           <div
@@ -59,7 +56,7 @@ const MonsterCardDetailItem = ({ monster }: { monster: BattleMonster }) => {
                 <span className={`text-xs font-medium text-gray-500`}>
                   Rank
                 </span>
-                <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-800 dark:bg-blue-900 dark:text-blue-200 capitalize">
                   {monster.rank}
                 </span>
               </div>
@@ -69,27 +66,27 @@ const MonsterCardDetailItem = ({ monster }: { monster: BattleMonster }) => {
           <div className="flex flex-col gap-2">
             <MonsterStatusBarItem
               name="Health"
-              value={monster.status.health}
+              value={monster.health}
               maxValue={MAX_HEALTH}
             />
             <MonsterStatusBarItem
               name="Attack"
-              value={monster.status.attack}
+              value={monster.attack}
               maxValue={MAX_STATUS}
             />
             <MonsterStatusBarItem
               name="Defense"
-              value={monster.status.defense}
+              value={monster.defense}
               maxValue={MAX_STATUS}
             />
             <MonsterStatusBarItem
               name="Speed"
-              value={monster.status.speed}
+              value={monster.speed}
               maxValue={MAX_STATUS}
             />
             <MonsterStatusBarItem
               name="Critical"
-              value={monster.status.critical}
+              value={monster.critical}
               maxValue={MAX_STATUS}
             />
           </div>
@@ -112,7 +109,7 @@ const MonsterCardDetailItem = ({ monster }: { monster: BattleMonster }) => {
                 <div
                   className={`text-xs font-bold text-yellow-600 dark:text-yellow-400`}
                 >
-                  {monster.experience}
+                  {monster.experience_reward}
                 </div>
               </div>
 
@@ -129,7 +126,7 @@ const MonsterCardDetailItem = ({ monster }: { monster: BattleMonster }) => {
                 <div
                   className={`text-xs font-bold text-yellow-600 dark:text-yellow-400`}
                 >
-                  {monster.gold}
+                  {monster.gold_reward}
                 </div>
               </div>
             </div>

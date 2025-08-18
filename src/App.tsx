@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Home, MapDetail, Login, Register } from './pages';
-import { QueryProvider } from './services/QueryProvider';
+import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './providers/AuthProvider';
 import { ToastProvider } from './providers/ToastProvider';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,6 +12,7 @@ import Character from './pages/Character';
 import OnBoarding from './pages/OnBoarding';
 import Equipment from './pages/Equipment';
 import './App.css';
+import MapZoneDetail from './pages/MapZoneDetail';
 
 const App: React.FC = () => {
   return (
@@ -61,6 +62,7 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
+
                 <Route
                   path="/map/:mapId"
                   element={
@@ -69,6 +71,15 @@ const App: React.FC = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/map/:mapId/zone/:zoneId"
+                  element={
+                    <ProtectedRoute>
+                      <MapZoneDetail />
+                    </ProtectedRoute>
+                  }
+                />
+
                 <Route
                   path="/inventory"
                   element={

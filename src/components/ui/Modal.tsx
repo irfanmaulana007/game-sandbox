@@ -52,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({
 
       {/* Modal */}
       <div
-        className={`relative w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden rounded-lg bg-white shadow-xl dark:bg-gray-800`}
+        className={`relative w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden rounded-lg bg-white shadow-xl dark:bg-gray-800 cursor-default`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

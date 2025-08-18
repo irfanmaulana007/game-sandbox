@@ -2,16 +2,24 @@ import React from 'react';
 import { Layout } from '~/components/layout';
 import { Card, CardHeader, CardBody } from '~/components/ui/Card';
 import Button from '~/components/ui/Button';
-import useCharacterStore from '~/store/character-store';
 import { Navigate } from 'react-router-dom';
 import CharacterStatusBar from '~/components/character-status/CharacterStatusBar';
 import CharacterStatusRadar from '~/components/character-status/CharacterStatusRadar';
-import { useExperience } from '~/hooks/useExperience';
 import { numberFormat } from '~/utils/number';
+import { useMyCharacter } from '~/services/character-service';
+import { useLevelExperience } from '~/services/experience-service';
+import { useAttributeAllocation } from '~/hooks/useAttibuteAllocation';
 
 const Character: React.FC = () => {
+  const { data: characterData, isLoading: characterLoading } = useMyCharacter();
+  const character = characterData?.data;
+  console.log('🚀 ~ Character ~ character:', character);
+  const { data: experienceData, isLoading: experienceLoading } =
+    useLevelExperience(character?.experience);
+  const experience = experienceData?.data;
+  console.log('🚀 ~ Character ~ experience:', experience);
+
   const {
-    character,
     isAllocating,
     tempStatus,
     tempAvailablePoints,
@@ -19,8 +27,13 @@ const Character: React.FC = () => {
     cancelAllocation,
     allocateStatusPoint,
     applyAllocation,
-  } = useCharacterStore();
-  const { getExperienceProgress, resetStatusPoints } = useExperience(character);
+    resetPoints,
+    isLoading: resetStatusPointsPending,
+  } = useAttributeAllocation(character);
+
+  if (characterLoading || experienceLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!character) {
     return <Navigate to="/onboarding" />;
@@ -37,14 +50,28 @@ const Character: React.FC = () => {
     return icons[jobName as keyof typeof icons] || '👤';
   };
 
-  const resetPoints = () => {
-    resetStatusPoints();
-  };
+  // const startAllocation = () => {
+  //   // startAllocation();
+  // };
 
-  const experienceProgress = getExperienceProgress();
-  const displayAvailablePoints = isAllocating
-    ? tempAvailablePoints
-    : character.availableStatusPoints;
+  // const cancelAllocation = () => {
+  //   // cancelAllocation();
+  // };
+
+  // const applyAllocation = () => {
+  //   // applyAllocation();
+  // };
+
+  // const experienceProgress = getExperienceProgress();
+  // const displayAvailablePoints = isAllocating
+  //   ? tempAvailablePoints
+  //   : character.status_points;
+
+  // const isAllocating = false;
+
+  if (experience === undefined) {
+    return <div>No experience data</div>;
+  }
 
   return (
     <Layout>
@@ -77,40 +104,27 @@ const Character: React.FC = () => {
               <span>Experience</span>
               <span>
                 {numberFormat(character.experience)} XP
-                {!experienceProgress?.isMaxLevel && experienceProgress && (
-                  <>
-                    {' '}
-                    /{' '}
-                    {numberFormat(
-                      experienceProgress.experienceNeededForNextLevel +
-                        experienceProgress.experienceInCurrentLevel
-                    )}{' '}
-                    XP
-                  </>
-                )}
-                {experienceProgress?.isMaxLevel && ' (Max Level)'}
+                <>
+                  {' '}
+                  /{' '}
+                  {numberFormat(
+                    experience.experienceToNext + experience.currentExperience
+                  )}{' '}
+                  XP
+                </>
               </span>
             </div>
             <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700">
               <div
                 className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300"
                 style={{
-                  width: `${experienceProgress ? experienceProgress.progressPercentage : 0}%`,
+                  width: `${experience.progress}%`,
                 }}
               ></div>
             </div>
-            {experienceProgress && !experienceProgress.isMaxLevel && (
-              <div className="mt-1 text-center text-xs text-gray-500">
-                {numberFormat(experienceProgress.experienceInCurrentLevel)} /{' '}
-                {numberFormat(experienceProgress.experienceNeededForNextLevel)}{' '}
-                XP to next level
-              </div>
-            )}
-            {experienceProgress?.isMaxLevel && (
-              <div className="mt-1 text-center text-xs font-medium text-green-600">
-                🎉 Congratulations! You've reached the maximum level!
-              </div>
-            )}
+            <div className="mt-1 text-center text-xs text-gray-500">
+              {numberFormat(experience.experienceToNext)} XP to next level
+            </div>
           </div>
         </div>
 
@@ -129,12 +143,13 @@ const Character: React.FC = () => {
                       variant="outline"
                       onClick={resetPoints}
                       className="text-xs"
+                      isLoading={resetStatusPointsPending}
                     >
                       Reset Points
                     </Button>
                   )}
 
-                  {!isAllocating && character.availableStatusPoints > 0 && (
+                  {!isAllocating && character.status_points > 0 && (
                     <Button
                       size="sm"
                       variant="outline"
@@ -178,7 +193,9 @@ const Character: React.FC = () => {
                       isAllocating ? 'text-blue-600' : 'text-gray-500'
                     }`}
                   >
-                    {displayAvailablePoints}
+                    {isAllocating
+                      ? tempAvailablePoints
+                      : character.status_points}
                     {isAllocating && (
                       <span className="ml-2 text-xs text-blue-500">
                         (Allocating...)
@@ -187,7 +204,13 @@ const Character: React.FC = () => {
                   </span>
                 </div>
                 <CharacterStatusBar
-                  status={character.status}
+                  status={{
+                    health: character.max_health,
+                    attack: character.attack,
+                    defense: character.defense,
+                    speed: character.speed,
+                    critical: character.critical,
+                  }}
                   isAllocating={isAllocating}
                   tempStatus={tempStatus}
                   tempAvailablePoints={tempAvailablePoints}
@@ -207,7 +230,13 @@ const Character: React.FC = () => {
             <CardBody>
               <div className="h-80">
                 <CharacterStatusRadar
-                  status={character.status}
+                  status={{
+                    health: character.max_health,
+                    attack: character.attack,
+                    defense: character.defense,
+                    speed: character.speed,
+                    critical: character.critical,
+                  }}
                   comparedStatus={tempStatus}
                 />
               </div>

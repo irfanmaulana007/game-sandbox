@@ -1,9 +1,7 @@
-export type MapDifficulty = 'easy' | 'medium' | 'hard' | 'very_hard';
+import type { MapZones, Maps } from './model/schema';
+import type { MonsterDetail } from './monster';
 
-export interface Map {
-  id: number;
-  name: string;
-  description: string;
-  minLevel: number;
-  recommendedLevel: number;
+export interface MapZoneDetail extends MapZones {
+  map: Maps;
+  monsters_details: MonsterDetail[];
 }

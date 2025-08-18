@@ -1,15 +1,14 @@
-import type { Equipment, EquipmentType } from '~/types/equipment';
-import type { Item } from '~/types/item';
+import type { Equipment, EquipmentType, Rarity } from '~/types/model/schema';
 import { Card, CardBody, CardHeader } from './ui';
 import { numberFormat } from '~/utils/number';
+import { useMemo } from 'react';
 
 // Equipment Card Component
 interface EquipmentCardProps {
   equipment: Equipment;
-  item: Item;
 }
 
-export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
+export default function EquipmentCard({ equipment }: EquipmentCardProps) {
   const getTypeIcon = (type: EquipmentType) => {
     const icons = {
       weapon: '⚔️',
@@ -19,7 +18,7 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
     return icons[type];
   };
 
-  const getRarityColor = (rarity: Item['rarity']) => {
+  const getRarityColor = (rarity: Rarity) => {
     const colors = {
       common: 'text-gray-600 dark:text-gray-400',
       uncommon: 'text-green-600 dark:text-green-400',
@@ -30,6 +29,16 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
     return colors[rarity];
   };
 
+  const equipmentStats = useMemo(() => {
+    return {
+      health: equipment.health_bonus,
+      attack: equipment.attack_bonus,
+      defense: equipment.defense_bonus,
+      speed: equipment.speed_bonus,
+      critical: equipment.critical_bonus,
+    };
+  }, [equipment]);
+
   return (
     <Card className="group cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
       <CardHeader className="pb-2">
@@ -38,16 +47,17 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
             <span className="text-2xl">{getTypeIcon(equipment.type)}</span>
             <div>
               <h3
-                className={`font-semibold transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 ${getRarityColor(item.rarity)}`}
+                className={`font-semibold transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 ${getRarityColor(equipment.rarity)}`}
               >
-                {item.name}
+                {equipment.name}
               </h3>
               <div className="mt-1 flex items-center gap-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Lv.{equipment.minLevel}
+                  Lv.{equipment.min_level}
                 </span>
-                <span className={`text-xs ${getRarityColor(item.rarity)}`}>
-                  {item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1)}
+                <span className={`text-xs ${getRarityColor(equipment.rarity)}`}>
+                  {equipment.rarity.charAt(0).toUpperCase() +
+                    equipment.rarity.slice(1)}
                 </span>
               </div>
             </div>
@@ -57,7 +67,7 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
 
       <CardBody className="pt-0">
         <p className="mb-4 overflow-hidden text-ellipsis text-sm text-gray-600 dark:text-gray-300">
-          {item.description}
+          {equipment.description}
         </p>
 
         {/* Status Stats */}
@@ -66,7 +76,7 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
             Stats
           </h4>
           <div className="grid grid-cols-2 gap-2">
-            {Object.entries(equipment.status).map(([stat, value]) => (
+            {Object.entries(equipmentStats).map(([stat, value]) => (
               <div
                 key={stat}
                 className="flex items-center justify-between text-xs"
@@ -87,13 +97,13 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
           <div className="text-xs text-gray-500 dark:text-gray-400">
             Buy:{' '}
             <span className="font-medium text-green-600 dark:text-green-400">
-              {numberFormat(item.price.buy)}
+              {numberFormat(equipment.buy_price)}
             </span>
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400">
             Sell:{' '}
             <span className="font-medium text-red-600 dark:text-red-400">
-              {numberFormat(item.price.sell)}
+              {numberFormat(equipment.sell_price)}
             </span>
           </div>
         </div>
@@ -101,7 +111,7 @@ export default function EquipmentCard({ equipment, item }: EquipmentCardProps) {
         {/* Drop Rate */}
         <div className="mt-2 text-center">
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            Drop Rate: {(item.dropRate * 100).toFixed(1)}%
+            Drop Rate: {(equipment.drop_rate * 100).toFixed(1)}%
           </span>
         </div>
       </CardBody>

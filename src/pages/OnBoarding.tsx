@@ -1,46 +1,19 @@
 import React, { useState } from 'react';
 import CharacterSelection from '~/components/CharacterSelection';
 import { Button, Card, CardBody, CardHeader } from '~/components/ui';
-import type { CharacterJob } from '~/types/character';
-import JOB_LIST from '~/constants/characters/job';
 import { useNavigate } from 'react-router-dom';
 import { useCreateCharacter } from '~/services/character-service';
+import type { JobClasses } from '~/types/model/schema';
+import type { CharacterStatus } from '~/types/character';
 
 const OnBoarding: React.FC = () => {
   const navigate = useNavigate();
   const { mutate: createCharacter } = useCreateCharacter();
 
   const [characterName, setCharacterName] = useState('');
-  const [selectedJob, setSelectedJob] = useState<CharacterJob>(JOB_LIST[0]);
+  const [selectedJob, setSelectedJob] = useState<JobClasses | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<{ name?: string }>({});
-
-  const getJobDescription = (jobName: string) => {
-    const descriptions = {
-      Barbarian:
-        'A fierce warrior with high defense and attack power. Perfect for players who prefer tanking and dealing heavy damage.',
-      Swordsman:
-        'A balanced fighter with good attack and defense. Versatile and suitable for various combat situations.',
-      Archer:
-        'A ranged specialist with high speed and critical chance. Excels at dealing damage from a distance.',
-      Ninja:
-        'A stealthy assassin with exceptional speed and critical strikes. Ideal for players who prefer hit-and-run tactics.',
-    };
-    return (
-      descriptions[jobName as keyof typeof descriptions] ||
-      'A skilled warrior ready for adventure.'
-    );
-  };
-
-  const getJobIcon = (jobName: string) => {
-    const icons = {
-      Barbarian: '⚔️',
-      Swordsman: '🗡️',
-      Archer: '🏹',
-      Ninja: '🥷',
-    };
-    return icons[jobName as keyof typeof icons] || '👤';
-  };
 
   const validateForm = () => {
     const newErrors: { name?: string } = {};
@@ -58,7 +31,7 @@ const OnBoarding: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!validateForm()) return;
+    if (!validateForm() || !selectedJob) return;
 
     const character = {
       name: characterName.trim(),
@@ -123,164 +96,218 @@ const OnBoarding: React.FC = () => {
           </div>
         </div>
 
-        {currentStep === 1 ? (
-          /* Step 1: Job Selection */
-          <div className="space-y-8">
-            <div className="text-center">
-              <h2 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
-                Choose Your Class
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Select a class that matches your playstyle
+        {currentStep === 1 && (
+          <OnBoardingStep1
+            selectedJob={selectedJob}
+            setSelectedJob={setSelectedJob}
+            handleNext={handleNext}
+          />
+        )}
+
+        {currentStep === 2 && (
+          <OnBoardingStep2
+            selectedJob={selectedJob}
+            characterName={characterName}
+            setCharacterName={setCharacterName}
+            errors={errors}
+            setErrors={setErrors}
+            handleBack={handleBack}
+            handleSubmit={handleSubmit}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+const OnBoardingStep1 = ({
+  selectedJob,
+  setSelectedJob,
+  handleNext,
+}: {
+  selectedJob: JobClasses | null;
+  setSelectedJob: (job: JobClasses) => void;
+  handleNext: () => void;
+}) => {
+  return (
+    <div className="space-y-8">
+      <div className="text-center">
+        <h2 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
+          Choose Your Class
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Select a class that matches your playstyle
+        </p>
+      </div>
+
+      <CharacterSelection
+        selectedJob={selectedJob}
+        onSelectJob={setSelectedJob}
+      />
+
+      <div className="text-center">
+        <Button onClick={handleNext} size="lg" className="px-8">
+          Continue to Character Details
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const OnBoardingStep2 = ({
+  selectedJob,
+  characterName,
+  setCharacterName,
+  errors,
+  setErrors,
+  handleBack,
+  handleSubmit,
+}: {
+  selectedJob: JobClasses | null;
+  characterName: string;
+  setCharacterName: (name: string) => void;
+  errors: { name?: string };
+  setErrors: (errors: { name?: string }) => void;
+  handleBack: () => void;
+  handleSubmit: () => void;
+}) => {
+  const getJobStatus = (job: JobClasses) => {
+    return {
+      base: {
+        health: job.base_health,
+        attack: job.base_attack,
+        defense: job.base_defense,
+        speed: job.base_speed,
+        critical: job.base_critical,
+      },
+      bonus: {
+        health: job.health_per_level,
+        attack: job.attack_per_level,
+        defense: job.defense_per_level,
+        speed: job.speed_per_level,
+        critical: job.critical_per_level,
+      },
+    };
+  };
+
+  const getJobIcon = (jobName: string) => {
+    const icons = {
+      Barbarian: '⚔️',
+      Swordsman: '🗡️',
+      Archer: '🏹',
+      Ninja: '🥷',
+    };
+    return icons[jobName as keyof typeof icons] || '👤';
+  };
+
+  if (!selectedJob) return null;
+  return (
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div className="text-center">
+        <h2 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
+          Character Details
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Give your character a name and finalize your choice
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="text-3xl">{getJobIcon(selectedJob.name)}</div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                {selectedJob.name}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Level 1 • {selectedJob.description}
               </p>
             </div>
+          </div>
+        </CardHeader>
+        <CardBody>
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="characterName"
+                className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Character Name
+              </label>
+              <input
+                id="characterName"
+                type="text"
+                placeholder="Enter your character's name..."
+                value={characterName}
+                onChange={(e) => {
+                  setCharacterName(e.target.value);
+                  if (errors.name) {
+                    setErrors({ ...errors, name: undefined });
+                  }
+                }}
+                className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 ${
+                  errors.name
+                    ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                    : 'border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white'
+                }`}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  {errors.name}
+                </p>
+              )}
+            </div>
 
-            <CharacterSelection
-              selectedJob={selectedJob}
-              onSelectJob={setSelectedJob}
-            />
-
-            {/* Selected Job Preview */}
-            <Card className="mx-auto max-w-2xl">
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className="text-4xl">{getJobIcon(selectedJob.name)}</div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
-                      {selectedJob.name}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      {getJobDescription(selectedJob.name)}
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardBody>
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-                  {Object.entries(selectedJob.baseStatus).map(
-                    ([stat, value]) => (
-                      <div key={stat} className="text-center">
-                        <div className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-                          {stat}
-                        </div>
-                        <div className="text-lg font-semibold text-gray-800 dark:text-white">
-                          {value}
+            <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <h4 className="mb-3 font-medium text-gray-800 dark:text-white">
+                Starting Stats
+              </h4>
+              <div className="grid grid-cols-5 gap-2">
+                {Object.entries(getJobStatus(selectedJob).base).map(
+                  ([statName, value]) => {
+                    const bonus =
+                      getJobStatus(selectedJob).bonus[
+                        statName as keyof CharacterStatus
+                      ];
+                    return (
+                      <div key={statName} className="text-center">
+                        <div className="text-xs font-medium">{statName}</div>
+                        <div className="flex items-center justify-center gap-1">
+                          <div className="text-sm font-bold text-gray-800 dark:text-white">
+                            {value}
+                          </div>
+                          <div className="text-2xs text-gray-500 dark:text-gray-400">
+                            + {bonus}
+                          </div>
                         </div>
                       </div>
-                    )
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-
-            <div className="text-center">
-              <Button onClick={handleNext} size="lg" className="px-8">
-                Continue to Character Details
-              </Button>
+                    );
+                  }
+                )}
+              </div>
             </div>
           </div>
-        ) : (
-          /* Step 2: Character Details */
-          <div className="mx-auto max-w-2xl space-y-8">
-            <div className="text-center">
-              <h2 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white">
-                Character Details
-              </h2>
-              <p className="text-gray-600 dark:text-gray-300">
-                Give your character a name and finalize your choice
-              </p>
-            </div>
+        </CardBody>
+      </Card>
 
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <div className="text-3xl">{getJobIcon(selectedJob.name)}</div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                      {selectedJob.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Level 1 • {getJobDescription(selectedJob.name)}
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardBody>
-                <div className="space-y-6">
-                  <div>
-                    <label
-                      htmlFor="characterName"
-                      className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Character Name
-                    </label>
-                    <input
-                      id="characterName"
-                      type="text"
-                      placeholder="Enter your character's name..."
-                      value={characterName}
-                      onChange={(e) => {
-                        setCharacterName(e.target.value);
-                        if (errors.name) {
-                          setErrors({ ...errors, name: undefined });
-                        }
-                      }}
-                      className={`w-full rounded-lg border px-4 py-3 transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-500 ${
-                        errors.name
-                          ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                          : 'border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white'
-                      }`}
-                    />
-                    {errors.name && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {errors.name}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-                    <h4 className="mb-3 font-medium text-gray-800 dark:text-white">
-                      Starting Stats
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-                      {Object.entries(selectedJob.baseStatus).map(
-                        ([stat, value]) => (
-                          <div key={stat} className="text-center">
-                            <div className="mb-1 text-xs text-gray-500 dark:text-gray-400">
-                              {stat}
-                            </div>
-                            <div className="text-sm font-semibold text-gray-800 dark:text-white">
-                              {value}
-                            </div>
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-
-            <div className="flex justify-center gap-4">
-              <Button
-                onClick={handleBack}
-                variant="outline"
-                size="lg"
-                className="px-8"
-              >
-                Back
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                size="lg"
-                className="px-8"
-                disabled={!characterName.trim()}
-              >
-                Create Character
-              </Button>
-            </div>
-          </div>
-        )}
+      <div className="flex justify-center gap-4">
+        <Button
+          onClick={handleBack}
+          variant="outline"
+          size="lg"
+          className="px-8"
+        >
+          Back
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          size="lg"
+          className="px-8"
+          disabled={!characterName.trim()}
+        >
+          Create Character
+        </Button>
       </div>
     </div>
   );

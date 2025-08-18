@@ -3,7 +3,6 @@ import { apiClient } from './api';
 import type { BaseResponse } from '~/types/api';
 import type { Users } from '~/types/model/schema';
 
-// Auth types
 export interface LoginCredentials {
   username: string;
   password: string;
@@ -29,7 +28,6 @@ export interface RefreshTokenResponse {
   expiresIn: number;
 }
 
-// API endpoints
 const AUTH_ENDPOINTS = {
   login: '/auth/login',
   register: '/auth/register',
@@ -38,9 +36,7 @@ const AUTH_ENDPOINTS = {
   getUser: '/auth/me',
 } as const;
 
-// Service functions
 export const authService = {
-  // Login user
   login: async (
     credentials: LoginCredentials
   ): Promise<BaseResponse<AuthResponse>> => {
@@ -56,7 +52,6 @@ export const authService = {
     return response;
   },
 
-  // Register user
   register: async (
     userData: RegisterData
   ): Promise<BaseResponse<AuthResponse>> => {
@@ -72,23 +67,18 @@ export const authService = {
     return response;
   },
 
-  // Logout user
   logout: async (): Promise<void> => {
     try {
-      // Call logout endpoint to invalidate tokens on server
       await apiClient.post(AUTH_ENDPOINTS.logout);
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if server call fails, clear local tokens
       console.warn('Logout server call failed, clearing local tokens');
     } finally {
-      // Clear tokens from localStorage
       localStorage.removeItem('auth_token');
       localStorage.removeItem('refresh_token');
     }
   },
 
-  // Refresh access token
   refreshToken: async (): Promise<BaseResponse<RefreshTokenResponse>> => {
     const refreshToken = localStorage.getItem('refresh_token');
     if (!refreshToken) {
@@ -102,30 +92,25 @@ export const authService = {
       }
     );
 
-    // Update stored token
     localStorage.setItem('auth_token', response.data.token);
     localStorage.setItem('refresh_token', response.data.refreshToken);
 
     return response;
   },
 
-  // Check if user is authenticated
   isAuthenticated: (): boolean => {
     const token = localStorage.getItem('auth_token');
     return !!token;
   },
 
-  // Get stored token
   getToken: (): string | null => {
     return localStorage.getItem('auth_token');
   },
 
-  // Get stored refresh token
   getRefreshToken: (): string | null => {
     return localStorage.getItem('refresh_token');
   },
 
-  // Get user
   getUser: async (): Promise<BaseResponse<Users>> => {
     const response = await apiClient.get<BaseResponse<Users>>(
       AUTH_ENDPOINTS.getUser
@@ -134,20 +119,16 @@ export const authService = {
   },
 };
 
-// React Query hooks
 export const useLogin = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: authService.login,
     onSuccess: (authResponse) => {
-      // Clear any existing user data
       queryClient.clear();
 
-      // Set user data in cache
       queryClient.setQueryData(['user', 'profile'], authResponse.data.user);
 
-      // Invalidate and refetch user-related queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -159,13 +140,10 @@ export const useRegister = () => {
   return useMutation({
     mutationFn: authService.register,
     onSuccess: (authResponse) => {
-      // Clear any existing user data
       queryClient.clear();
 
-      // Set user data in cache
       queryClient.setQueryData(['user', 'profile'], authResponse.data.user);
 
-      // Invalidate and refetch user-related queries
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
   });
@@ -177,10 +155,8 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: authService.logout,
     onSuccess: () => {
-      // Clear all cached data
       queryClient.clear();
 
-      // Redirect to login page
       window.location.href = '/login';
     },
   });

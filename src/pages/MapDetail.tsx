@@ -1,80 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '~/components/layout';
 import { Button } from '~/components/ui';
 import { DIFFICULTY_COLORS } from '~/constants/colors';
-import { MAPS } from '~/constants/map';
-import { MONSTERS_WITH_RANGES } from '~/constants/monster/index';
-import useCharacterStore from '~/store/character-store';
-import type { MapDifficulty } from '~/types/map';
-import { useCallback } from 'react';
-import BattleLog from '~/components/BattleLog';
-import type { BattleMonster } from '~/types/monster';
-import MonsterCard from '~/components/MonsterCard';
-import { useMonster } from '~/hooks/useMonster';
-import { LevelUpModal } from '~/components';
-import { useLevelUp } from '~/hooks';
+import { useMapDetail } from '~/services/map-service';
+import MapZoneCard from '~/components/MapZoneCard';
 
 // Battle monster interface that combines base monster with status
 
 const MapDetail: React.FC = () => {
   const { mapId } = useParams<{ mapId: string }>();
   const navigate = useNavigate();
-  const { character } = useCharacterStore();
-  const { getRandomMonster } = useMonster();
-  const { levelUpState, showLevelUp, hideLevelUp, updatePreviousCharacter } =
-    useLevelUp();
 
-  const [selectedMonster, setSelectedMonster] = useState<BattleMonster | null>(
-    null
-  );
-  const [showBattleLog, setShowBattleLog] = useState(false);
+  const { data: mapData } = useMapDetail(Number(mapId));
+  const map = mapData?.data;
 
-  // Track character changes for level up detection
-  useEffect(() => {
-    if (character) {
-      updatePreviousCharacter(character);
-    }
-  }, [character, updatePreviousCharacter]);
-
-  const handleExploration = () => {
-    const randomMonster = getRandomMonster(Number(mapId));
-    if (randomMonster) {
-      setSelectedMonster(randomMonster);
-      setShowBattleLog(true);
-    }
-  };
-
-  const map = MAPS.find((m) => m.id === Number(mapId));
-  const mapMonsters = MONSTERS_WITH_RANGES.filter(
-    (monster) => monster.mapId === Number(mapId)
-  );
-
-  const getDifficulty = useCallback((): MapDifficulty => {
-    if (!character || !map) return 'easy';
-
-    if (map.minLevel - character.level <= 0) return 'easy';
-    if (map.minLevel - character.level <= 2) return 'medium';
-    if (map.minLevel - character.level <= 4) return 'hard';
-    return 'very_hard';
-  }, [character, map]);
-
-  if (!character) {
-    return (
-      <Layout>
-        <div className="container mx-auto p-4">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600">
-              Character not found
-            </h1>
-            <Button onClick={() => navigate('/')} className="mt-4">
-              Back to Maps
-            </Button>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
+  const mapRecommendedLevel = useMemo(() => {
+    if (!map) return 0;
+    return Math.floor((map.min_level + map.max_level) / 2) + 1;
+  }, [map]);
 
   if (!map) {
     return (
@@ -101,14 +45,14 @@ const MapDetail: React.FC = () => {
             className="mb-4"
             variant="outline"
           >
-            ← Back to Maps
+            ← Back to Explore
           </Button>
 
           <div className="rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-6 dark:from-gray-800 dark:to-gray-700">
             <div className="flex items-center justify-between">
               <div>
                 <h1
-                  className={`text-3xl font-bold ${DIFFICULTY_COLORS[getDifficulty()]}`}
+                  className={`text-3xl font-bold ${DIFFICULTY_COLORS[map.difficulty]}`}
                 >
                   {map.name}
                 </h1>
@@ -123,9 +67,9 @@ const MapDetail: React.FC = () => {
                       Min Level:
                     </span>
                     <span
-                      className={`text-lg font-bold ${DIFFICULTY_COLORS[getDifficulty()]}`}
+                      className={`text-lg font-bold ${DIFFICULTY_COLORS[map.difficulty]}`}
                     >
-                      {map.minLevel}
+                      {map.min_level}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -133,9 +77,9 @@ const MapDetail: React.FC = () => {
                       Recommended:
                     </span>
                     <span
-                      className={`text-lg font-bold ${DIFFICULTY_COLORS[getDifficulty()]}`}
+                      className={`text-lg font-bold ${DIFFICULTY_COLORS[map.difficulty]}`}
                     >
-                      {map.recommendedLevel}
+                      {mapRecommendedLevel}
                     </span>
                   </div>
                 </div>
@@ -144,56 +88,18 @@ const MapDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Monster Section */}
+        {/* Map Zone Section */}
         <div className="mb-6">
           <h2 className="mb-4 text-2xl font-bold text-gray-800 dark:text-white">
-            Monsters in this Area
+            Map Zones
           </h2>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {mapMonsters.map((monster) => (
-              <MonsterCard
-                key={monster.id}
-                monster={monster}
-                className="h-fit"
-                variant="compact"
-              />
+            {map.map_zones.map((mapZone) => (
+              <MapZoneCard key={mapZone.id} mapZone={mapZone} />
             ))}
           </div>
         </div>
-
-        {/* Battle Section */}
-        {showBattleLog && selectedMonster && (
-          <div className="mb-6">
-            <BattleLog
-              character={character}
-              monster={selectedMonster}
-              onReset={handleExploration}
-              onLevelUp={showLevelUp}
-            />
-          </div>
-        )}
-
-        {/* Action Section */}
-        <div className="text-center">
-          <Button
-            size="lg"
-            className="px-8 py-3 text-lg"
-            onClick={handleExploration}
-            disabled={showBattleLog}
-          >
-            Start Exploration
-          </Button>
-        </div>
       </div>
-
-      {/* Level Up Modal */}
-      <LevelUpModal
-        isVisible={levelUpState.isVisible}
-        onClose={hideLevelUp}
-        character={character}
-        previousLevel={levelUpState.previousLevel}
-        previousStatus={levelUpState.previousStatus}
-      />
     </Layout>
   );
 };

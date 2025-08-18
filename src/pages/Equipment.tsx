@@ -1,19 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import EquipmentCard from '~/components/EquipmentCard';
 import { Layout } from '~/components/layout';
 import { Card, CardHeader, CardBody } from '~/components/ui';
-import { EQUIPMENT_DATA } from '~/constants/equipment';
-import { EQUIPMENT_ITEMS } from '~/constants/items';
-import type { Equipment, EquipmentType } from '~/types/equipment';
-import type { ItemRarity } from '~/types/item';
+import type { EquipmentType, Rarity } from '~/types/model/schema';
+import { useEquipment } from '~/services/equipment-service';
 
 // Filter Component
 interface FilterProps {
   selectedType: EquipmentType | 'all';
-  selectedRarity: ItemRarity | 'all';
+  selectedRarity: Rarity | 'all';
   selectedLevel: number | 'all';
   onTypeChange: (type: EquipmentType | 'all') => void;
-  onRarityChange: (rarity: ItemRarity | 'all') => void;
+  onRarityChange: (rarity: Rarity | 'all') => void;
   onLevelChange: (level: number | 'all') => void;
 }
 
@@ -31,7 +29,7 @@ const Filter: React.FC<FilterProps> = ({
     'armor',
     'accessory',
   ];
-  const rarities: (ItemRarity | 'all')[] = [
+  const rarities: (Rarity | 'all')[] = [
     'all',
     'common',
     'uncommon',
@@ -57,9 +55,7 @@ const Filter: React.FC<FilterProps> = ({
             </label>
             <select
               value={selectedType}
-              onChange={(e) =>
-                onTypeChange(e.target.value as EquipmentType | 'all')
-              }
+              onChange={(e) => onTypeChange(e.target.value as EquipmentType)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               {types.map((type) => (
@@ -79,9 +75,7 @@ const Filter: React.FC<FilterProps> = ({
             </label>
             <select
               value={selectedRarity}
-              onChange={(e) =>
-                onRarityChange(e.target.value as ItemRarity | 'all')
-              }
+              onChange={(e) => onRarityChange(e.target.value as Rarity)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             >
               {rarities.map((rarity) => (
@@ -124,15 +118,13 @@ const Filter: React.FC<FilterProps> = ({
 // Stats Component
 interface StatsProps {
   totalEquipment: number;
-  filteredEquipment: number;
   selectedType: EquipmentType | 'all';
-  selectedRarity: ItemRarity | 'all';
+  selectedRarity: Rarity | 'all';
   selectedLevel: number | 'all';
 }
 
 const Stats: React.FC<StatsProps> = ({
   totalEquipment,
-  filteredEquipment,
   selectedType,
   selectedRarity,
   selectedLevel,
@@ -165,11 +157,11 @@ const Stats: React.FC<StatsProps> = ({
         <CardBody className="text-center">
           <div className="mb-2 text-2xl">{getTypeIcon(selectedType)}</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {filteredEquipment}
+            {selectedType === 'all'
+              ? 'All'
+              : selectedType.charAt(0).toUpperCase() + selectedType.slice(1)}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Filtered Results
-          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Type</div>
         </CardBody>
       </Card>
 
@@ -203,38 +195,76 @@ export default function Equipment() {
   const [selectedType, setSelectedType] = useState<EquipmentType | 'all'>(
     'all'
   );
-  const [selectedRarity, setSelectedRarity] = useState<ItemRarity | 'all'>(
-    'all'
-  );
+  const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>('all');
   const [selectedLevel, setSelectedLevel] = useState<number | 'all'>('all');
 
-  // Create a combined data structure for filtering
-  const equipmentWithItems = useMemo(() => {
-    return EQUIPMENT_DATA.map((equipment) => {
-      const item = EQUIPMENT_ITEMS.find(
-        (item) => item.parentId === equipment.id
-      );
-      return {
-        equipment,
-        item: item || null,
-      };
-    });
-  }, []);
+  const { data: equipmentData } = useEquipment(
+    selectedType === 'all' ? undefined : selectedType,
+    selectedRarity === 'all' ? undefined : selectedRarity,
+    selectedLevel === 'all' ? undefined : selectedLevel
+  );
 
-  const filteredEquipment = useMemo(() => {
-    return equipmentWithItems.filter(({ equipment, item }) => {
-      if (!item) return false;
+  const equipments = useMemo(() => {
+    const data = equipmentData?.data ?? [];
+    const sortedByStats = data.sort(
+      (a, b) =>
+        b.health_bonus / 10 +
+        b.attack_bonus +
+        b.defense_bonus +
+        b.speed_bonus +
+        b.critical_bonus -
+        (a.health_bonus / 10 +
+          a.attack_bonus +
+          a.defense_bonus +
+          a.speed_bonus +
+          a.critical_bonus)
+    );
 
-      const typeMatch =
-        selectedType === 'all' || equipment.type === selectedType;
-      const rarityMatch =
-        selectedRarity === 'all' || item.rarity === selectedRarity;
-      const levelMatch =
-        selectedLevel === 'all' || equipment.minLevel >= selectedLevel;
+    const mapRarityOrder = {
+      common: 1,
+      uncommon: 2,
+      rare: 3,
+      epic: 4,
+      legendary: 5,
+    };
+    const sortedByRarity = sortedByStats?.sort(
+      (a, b) => mapRarityOrder[a.rarity] - mapRarityOrder[b.rarity]
+    );
 
-      return typeMatch && rarityMatch && levelMatch;
-    });
-  }, [equipmentWithItems, selectedType, selectedRarity, selectedLevel]);
+    const sortedByLevel = sortedByRarity?.sort(
+      (a, b) => a.min_level - b.min_level
+    );
+
+    return sortedByLevel;
+  }, [equipmentData]);
+
+  // // Create a combined data structure for filtering
+  // const equipmentWithItems = useMemo(() => {
+  //   return EQUIPMENT_DATA.map((equipment) => {
+  //     const item = EQUIPMENT_ITEMS.find(
+  //       (item) => item.parentId === equipment.id
+  //     );
+  //     return {
+  //       equipment,
+  //       item: item || null,
+  //     };
+  //   });
+  // }, []);
+
+  // const filteredEquipment = useMemo(() => {
+  //   return equipments.filter((equipment) => {
+  //     if (!item) return false;
+
+  //     const typeMatch =
+  //       selectedType === undefined || equipment.type === selectedType;
+  //     const rarityMatch =
+  //       selectedRarity === undefined || item.rarity === selectedRarity;
+  //     const levelMatch =
+  //       selectedLevel === undefined || equipment.minLevel >= selectedLevel;
+
+  //     return typeMatch && rarityMatch && levelMatch;
+  //   });
+  // }, [equipments, selectedType, selectedRarity, selectedLevel]);
 
   return (
     <Layout>
@@ -250,8 +280,7 @@ export default function Equipment() {
         </div>
 
         <Stats
-          totalEquipment={EQUIPMENT_DATA.length}
-          filteredEquipment={filteredEquipment.length}
+          totalEquipment={equipments.length}
           selectedType={selectedType}
           selectedRarity={selectedRarity}
           selectedLevel={selectedLevel}
@@ -266,7 +295,7 @@ export default function Equipment() {
           onLevelChange={setSelectedLevel}
         />
 
-        {filteredEquipment.length === 0 ? (
+        {equipments.length === 0 ? (
           <Card>
             <CardBody className="py-12 text-center">
               <div className="mb-4 text-6xl">🔍</div>
@@ -280,12 +309,8 @@ export default function Equipment() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredEquipment.map(({ equipment, item }) => (
-              <EquipmentCard
-                key={equipment.id}
-                equipment={equipment}
-                item={item!}
-              />
+            {equipments.map((equipment) => (
+              <EquipmentCard key={equipment.id} equipment={equipment} />
             ))}
           </div>
         )}
