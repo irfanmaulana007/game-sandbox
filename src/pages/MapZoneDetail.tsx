@@ -47,10 +47,10 @@ const MapZoneDetail: React.FC = () => {
     console.log('🚀 ~ MapZoneDetail ~ battleLog:', battleLog);
     if (battleLog?.levelGained) {
       setIsLevelUpModalOpen(true);
+    }
 
-      if (battleLog.equipmentDropped) {
-        setIsEquipmentDropModalOpen(true);
-      }
+    if (battleLog?.equipmentDropped) {
+      setIsEquipmentDropModalOpen(true);
     }
   }, [battleLog]);
 

@@ -10,7 +10,7 @@ interface BattleLogProps {
 
 export default function BattleLog({ character, monster, log }: BattleLogProps) {
   return (
-    <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800 ">
+    <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
           Battle Results
@@ -34,7 +34,7 @@ export default function BattleLog({ character, monster, log }: BattleLogProps) {
               Monster:
             </span>
             <span className="ml-2 font-bold text-gray-800 dark:text-white">
-              {monster.rank} ({monster.monster_detail.name})
+              {monster.monster_detail.name} ({monster.rank})
             </span>
           </div>
           <div>
@@ -81,7 +81,7 @@ export default function BattleLog({ character, monster, log }: BattleLogProps) {
       </div>
 
       {/* Battle Log */}
-      <div className="overflow-y-auto rounded-lg bg-gray-900 p-4 font-mono text-sm h-[400px]">
+      <div className="h-[400px] overflow-y-auto rounded-lg bg-gray-900 p-4 font-mono text-sm">
         {log.battleLog.battleLogDetails.map((log, index) => {
           const isDamageReceived = log.type === 'damage_received';
 

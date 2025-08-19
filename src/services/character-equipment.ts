@@ -6,8 +6,6 @@ import type { CharacterEquipmentWithEquipment } from '~/types/model/characterEqu
 
 const CHARACTER_EQUIPMENT_ENDPOINTS = {
   all: (characterId: string) => `/character-equipment/${characterId}`,
-  equipped: (characterId: string) =>
-    `/character-equipment/${characterId}/equipped`,
 } as const;
 
 export const characterEquipmentService = {
@@ -16,11 +14,6 @@ export const characterEquipmentService = {
   ): Promise<BaseResponse<CharacterEquipmentWithEquipment[]>> => {
     return apiClient.get(CHARACTER_EQUIPMENT_ENDPOINTS.all(characterId));
   },
-  equipped: async (
-    characterId: string
-  ): Promise<BaseResponse<CharacterEquipmentWithEquipment[]>> => {
-    return apiClient.get(CHARACTER_EQUIPMENT_ENDPOINTS.equipped(characterId));
-  },
 };
 
 export const useCharacterEquipment = (characterId: string | undefined) => {
@@ -28,12 +21,5 @@ export const useCharacterEquipment = (characterId: string | undefined) => {
     queryKey: queryKeys.characterEquipment.all(characterId ?? ''),
     enabled: !!characterId,
     queryFn: () => characterEquipmentService.all(characterId ?? ''),
-  });
-};
-
-export const useCharacterEquipped = (characterId: string) => {
-  return useQuery({
-    queryKey: queryKeys.characterEquipment.equipped(characterId),
-    queryFn: () => characterEquipmentService.equipped(characterId),
   });
 };

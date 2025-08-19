@@ -1,6 +1,10 @@
 import { QueryClient } from '@tanstack/react-query';
 import axios, { AxiosError, type AxiosInstance } from 'axios';
-import type { EquipmentType, Rarity } from '~/types/model/schema';
+import type {
+  EquipmentSlot,
+  EquipmentType,
+  Rarity,
+} from '~/types/model/schema';
 
 // API Configuration
 const API_BASE_URL =
@@ -104,7 +108,47 @@ export const queryKeys = {
 
   characterEquipment: {
     all: (characterId: string) => ['character-equipment', characterId] as const,
+  },
+
+  characterEquippedItems: {
+    all: (characterId: string) =>
+      ['character-equipped-items', characterId] as const,
     equipped: (characterId: string) =>
-      ['character-equipment', characterId, 'equipped'] as const,
+      ['character-equipped-items', characterId, 'equipped'] as const,
+    equippedBySlot: (characterId: string, slot: EquipmentSlot) =>
+      ['character-equipped-items', characterId, 'equipped', slot] as const,
+    equipToSlot: (
+      characterId: string,
+      equipmentId: number,
+      slot: EquipmentSlot
+    ) =>
+      [
+        'character-equipped-items',
+        characterId,
+        'equip',
+        equipmentId,
+        slot,
+      ] as const,
+    unEquipByItem: (characterId: string, equipmentId: number) =>
+      [
+        'character-equipped-items',
+        characterId,
+        'unequip',
+        equipmentId,
+      ] as const,
+    unEquipBySlot: (characterId: string, slot: EquipmentSlot) =>
+      ['character-equipped-items', characterId, 'unequip-slot', slot] as const,
+    swapEquipment: (
+      characterId: string,
+      equipmentId: number,
+      slot: EquipmentSlot
+    ) =>
+      [
+        'character-equipped-items',
+        characterId,
+        'swap',
+        equipmentId,
+        slot,
+      ] as const,
   },
 } as const;

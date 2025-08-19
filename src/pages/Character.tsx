@@ -5,19 +5,18 @@ import Button from '~/components/ui/Button';
 import { Navigate } from 'react-router-dom';
 import CharacterStatusBar from '~/components/character-status/CharacterStatusBar';
 import CharacterStatusRadar from '~/components/character-status/CharacterStatusRadar';
-import { numberFormat } from '~/utils/number';
 import { useMyCharacter } from '~/services/character-service';
 import { useLevelExperience } from '~/services/experience-service';
 import { useAttributeAllocation } from '~/hooks/useAttibuteAllocation';
+import CharacterInformation from '~/components/character-status/CharacterInformation';
+import CharacterEquipment from '~/components/CharacterEquipment';
 
 const Character: React.FC = () => {
   const { data: characterData, isLoading: characterLoading } = useMyCharacter();
   const character = characterData?.data;
-  console.log('🚀 ~ Character ~ character:', character);
   const { data: experienceData, isLoading: experienceLoading } =
     useLevelExperience(character?.experience);
   const experience = experienceData?.data;
-  console.log('🚀 ~ Character ~ experience:', experience);
 
   const {
     isAllocating,
@@ -39,36 +38,6 @@ const Character: React.FC = () => {
     return <Navigate to="/onboarding" />;
   }
 
-  const getJobIcon = (jobName: string) => {
-    const icons = {
-      Warrior: '⚔️',
-      Mage: '🔮',
-      Archer: '🏹',
-      Assassin: '🗡️',
-      Tank: '🛡️',
-    };
-    return icons[jobName as keyof typeof icons] || '👤';
-  };
-
-  // const startAllocation = () => {
-  //   // startAllocation();
-  // };
-
-  // const cancelAllocation = () => {
-  //   // cancelAllocation();
-  // };
-
-  // const applyAllocation = () => {
-  //   // applyAllocation();
-  // };
-
-  // const experienceProgress = getExperienceProgress();
-  // const displayAvailablePoints = isAllocating
-  //   ? tempAvailablePoints
-  //   : character.status_points;
-
-  // const isAllocating = false;
-
   if (experience === undefined) {
     return <div>No experience data</div>;
   }
@@ -77,56 +46,7 @@ const Character: React.FC = () => {
     <Layout>
       <div className="container mx-auto max-w-6xl px-4 py-8">
         {/* Character Header */}
-        <div className="mb-8">
-          <div className="mb-6 flex items-center justify-center gap-4">
-            <div className="text-6xl">{getJobIcon(character.job.name)}</div>
-            <div className="text-center">
-              <h1 className="mb-2 text-4xl font-bold text-gray-800 dark:text-white">
-                {character.name}
-              </h1>
-              <div className="flex items-center justify-center gap-2">
-                <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  {character.job.name}
-                </span>
-                <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
-                  Level {character.level}
-                </span>
-                <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-                  {numberFormat(character.gold)} Gold
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Experience Bar */}
-          <div className="mx-auto max-w-md">
-            <div className="mb-2 flex justify-between text-sm text-gray-600 dark:text-gray-400">
-              <span>Experience</span>
-              <span>
-                {numberFormat(character.experience)} XP
-                <>
-                  {' '}
-                  /{' '}
-                  {numberFormat(
-                    experience.experienceToNext + experience.currentExperience
-                  )}{' '}
-                  XP
-                </>
-              </span>
-            </div>
-            <div className="h-3 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-              <div
-                className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300"
-                style={{
-                  width: `${experience.progress}%`,
-                }}
-              ></div>
-            </div>
-            <div className="mt-1 text-center text-xs text-gray-500">
-              {numberFormat(experience.experienceToNext)} XP to next level
-            </div>
-          </div>
-        </div>
+        <CharacterInformation character={character} experience={experience} />
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Character Stats */}
@@ -242,6 +162,19 @@ const Character: React.FC = () => {
               </div>
             </CardBody>
           </Card>
+
+          <div className="col-span-2">
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                  Status Overview
+                </h2>
+              </CardHeader>
+              <CardBody>
+                <CharacterEquipment />
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </div>
     </Layout>

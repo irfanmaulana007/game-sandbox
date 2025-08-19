@@ -2,15 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from './api';
 import { queryKeys } from '~/constants/instance';
 import type { BaseResponse } from '~/types/api';
-
-interface LevelExperienceResponse {
-  currentLevel: 2;
-  nextLevel: 3;
-  experienceToNext: 450;
-  progress: 0;
-  currentExperience: 300;
-  nextLevelExperience: 750;
-}
+import type { LevelExperienceResponse } from '~/types/response/experience';
 
 const EXPERIENCE_ENDPOINTS = {
   getLevelExperience: (experience: number) => `/experience/next/${experience}`,
