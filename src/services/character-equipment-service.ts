@@ -20,6 +20,9 @@ export const useCharacterEquipment = (characterId: string | undefined) => {
   return useQuery({
     queryKey: queryKeys.characterEquipment.all(characterId ?? ''),
     enabled: !!characterId,
-    queryFn: () => characterEquipmentService.all(characterId ?? ''),
+    queryFn: () => {
+      console.log('Fetching character equipment for characterId:', characterId);
+      return characterEquipmentService.all(characterId ?? '');
+    },
   });
 };

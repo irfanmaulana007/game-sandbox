@@ -8,12 +8,14 @@ import { useMyCharacter } from '~/services/character-service';
 import { useMapZoneDetail } from '~/services/map-zone-service';
 import { useStartBattle } from '~/services/battle-service';
 import EquipmentDropModal from '~/components/EquipmentDropModal';
+import type { Equipment } from '~/types/model/schema';
 
 const MapZoneDetail: React.FC = () => {
   const { zoneId, mapId } = useParams<{ zoneId: string; mapId: string }>();
   const navigate = useNavigate();
 
   const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState<boolean>(false);
+  const [droppedItem, setDroppedItem] = useState<Equipment | null>(null);
   const [isEquipmentDropModalOpen, setIsEquipmentDropModalOpen] =
     useState<boolean>(false);
 
@@ -50,6 +52,7 @@ const MapZoneDetail: React.FC = () => {
     }
 
     if (battleLog?.equipmentDropped) {
+      setDroppedItem(battleLog.equipmentDropped);
       setIsEquipmentDropModalOpen(true);
     }
   }, [battleLog]);
@@ -197,7 +200,7 @@ const MapZoneDetail: React.FC = () => {
       <EquipmentDropModal
         isVisible={isEquipmentDropModalOpen}
         onClose={() => setIsEquipmentDropModalOpen(false)}
-        equipment={battleLog?.equipmentDropped ?? undefined}
+        equipment={droppedItem}
       />
     </Layout>
   );

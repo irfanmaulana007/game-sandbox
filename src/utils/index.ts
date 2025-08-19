@@ -3,3 +3,5 @@ export const classNames = (
 ): string => {
   return classes.filter(Boolean).join(' ');
 };
+
+export * from './equipment';

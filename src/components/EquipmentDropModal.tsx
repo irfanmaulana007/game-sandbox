@@ -6,7 +6,7 @@ import type { Equipment } from '~/types/model/schema';
 interface EquipmentDropModalProps {
   isVisible: boolean;
   onClose: () => void;
-  equipment: Equipment | undefined;
+  equipment: Equipment | null;
 }
 
 const EquipmentDropModal: React.FC<EquipmentDropModalProps> = ({

@@ -1,14 +1,20 @@
 import type { Equipment, EquipmentType, Rarity } from '~/types/model/schema';
-import { Card, CardBody, CardHeader } from './ui';
+import { Button, Card, CardBody, CardFooter, CardHeader } from './ui';
 import { numberFormat } from '~/utils/number';
 import { useMemo } from 'react';
 
 // Equipment Card Component
 interface EquipmentCardProps {
   equipment: Equipment;
+  isEquipped?: boolean;
+  onSell?: (equipmentId: number) => void;
 }
 
-export default function EquipmentCard({ equipment }: EquipmentCardProps) {
+export default function EquipmentCard({
+  equipment,
+  isEquipped = false,
+  onSell,
+}: EquipmentCardProps) {
   const getTypeIcon = (type: EquipmentType) => {
     const icons = {
       weapon: '⚔️',
@@ -41,80 +47,97 @@ export default function EquipmentCard({ equipment }: EquipmentCardProps) {
 
   return (
     <Card className="group cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{getTypeIcon(equipment.type)}</span>
-            <div>
-              <h3
-                className={`font-semibold transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 ${getRarityColor(equipment.rarity)}`}
-              >
-                {equipment.name}
-              </h3>
-              <div className="mt-1 flex items-center gap-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Lv.{equipment.min_level}
-                </span>
-                <span className={`text-xs ${getRarityColor(equipment.rarity)}`}>
-                  {equipment.rarity.charAt(0).toUpperCase() +
-                    equipment.rarity.slice(1)}
-                </span>
+      <div className="flex h-full flex-col justify-between">
+        <div className="flex h-full flex-col">
+          <CardHeader className="pb-2">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{getTypeIcon(equipment.type)}</span>
+                <div>
+                  <h3
+                    className={`font-semibold transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400 ${getRarityColor(equipment.rarity)}`}
+                  >
+                    {equipment.name}
+                  </h3>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      Lv.{equipment.min_level}
+                    </span>
+                    <span
+                      className={`text-xs ${getRarityColor(equipment.rarity)}`}
+                    >
+                      {equipment.rarity.charAt(0).toUpperCase() +
+                        equipment.rarity.slice(1)}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </CardHeader>
+          </CardHeader>
 
-      <CardBody className="pt-0">
-        <p className="mb-4 overflow-hidden text-ellipsis text-sm text-gray-600 dark:text-gray-300">
-          {equipment.description}
-        </p>
+          <CardBody className="pt-0">
+            <p className="mb-4 overflow-hidden text-ellipsis text-sm text-gray-600 dark:text-gray-300">
+              {equipment.description}
+            </p>
 
-        {/* Status Stats */}
-        <div className="mb-4 space-y-2">
-          <h4 className="text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300">
-            Stats
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(equipmentStats).map(([stat, value]) => (
-              <div
-                key={stat}
-                className="flex items-center justify-between text-xs"
-              >
-                <span className="capitalize text-gray-600 dark:text-gray-400">
-                  {stat}
-                </span>
-                <span className="font-medium text-gray-900 dark:text-white">
-                  +{value}
-                </span>
+            {/* Status Stats */}
+            <div className="mb-4 space-y-2">
+              <h4 className="text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300">
+                Stats
+              </h4>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(equipmentStats).map(([stat, value]) => (
+                  <div
+                    key={stat}
+                    className="flex items-center justify-between text-xs"
+                  >
+                    <span className="capitalize text-gray-600 dark:text-gray-400">
+                      {stat}
+                    </span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      +{value}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          </CardBody>
         </div>
+        <CardFooter>
+          {/* Price */}
+          <div className="flex items-center justify-between pt-3">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Buy:{' '}
+              <span className="font-medium text-green-600 dark:text-green-400">
+                {numberFormat(equipment.buy_price)}
+              </span>
+            </div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Sell:{' '}
+              <span className="font-medium text-red-600 dark:text-red-400">
+                {numberFormat(equipment.sell_price)}
+              </span>
+            </div>
+          </div>
 
-        {/* Price */}
-        <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Buy:{' '}
-            <span className="font-medium text-green-600 dark:text-green-400">
-              {numberFormat(equipment.buy_price)}
-            </span>
+          <div className="mt-2 text-center">
+            {/* Drop Rate */}
+            {onSell ? (
+              <Button
+                className="w-full"
+                onClick={() => onSell(equipment.id)}
+                disabled={isEquipped}
+              >
+                {isEquipped ? 'Equipped' : 'Sell'}
+              </Button>
+            ) : (
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Drop Rate: {(equipment.drop_rate * 100).toFixed(1)}%
+              </span>
+            )}
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Sell:{' '}
-            <span className="font-medium text-red-600 dark:text-red-400">
-              {numberFormat(equipment.sell_price)}
-            </span>
-          </div>
-        </div>
-
-        {/* Drop Rate */}
-        <div className="mt-2 text-center">
-          <span className="text-xs text-gray-500 dark:text-gray-400">
-            Drop Rate: {(equipment.drop_rate * 100).toFixed(1)}%
-          </span>
-        </div>
-      </CardBody>
+        </CardFooter>
+      </div>
     </Card>
   );
 }

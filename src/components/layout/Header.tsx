@@ -48,6 +48,12 @@ const Header: React.FC = () => {
                 >
                   Equipment
                 </Link>
+                <Link
+                  to="/shop"
+                  className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  Shop
+                </Link>
               </div>
             ) : (
               <div className="flex items-center">

@@ -11,6 +11,7 @@ import Inventory from './pages/Inventory';
 import Character from './pages/Character';
 import OnBoarding from './pages/OnBoarding';
 import Equipment from './pages/Equipment';
+import Shop from './pages/Shop';
 import './App.css';
 import MapZoneDetail from './pages/MapZoneDetail';
 
@@ -93,6 +94,14 @@ const App: React.FC = () => {
                   element={
                     <ProtectedRoute>
                       <Equipment />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/shop"
+                  element={
+                    <ProtectedRoute>
+                      <Shop />
                     </ProtectedRoute>
                   }
                 />

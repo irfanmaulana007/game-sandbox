@@ -89,6 +89,7 @@ export const characterEquippedItemService = {
 export const useEquippedItems = (characterId: string) => {
   return useQuery({
     queryKey: queryKeys.characterEquippedItems.all(characterId),
+    enabled: !!characterId,
     queryFn: () => characterEquippedItemService.getEquippedItems(characterId),
   });
 };

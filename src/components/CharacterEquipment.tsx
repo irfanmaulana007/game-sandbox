@@ -10,7 +10,7 @@ import { useMyCharacter } from '~/services/character-service';
 import { queryKeys } from '~/constants/instance';
 import type { EquipmentSlot, Equipment } from '~/types/model/schema';
 import type { EquipmentType } from '~/types/equipment';
-import { useCharacterEquipment } from '~/services/character-equipment';
+import { useCharacterEquipment } from '~/services/character-equipment-service';
 
 interface EquipmentSlotProps {
   slot: EquipmentSlot;
